@@ -21,12 +21,15 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $message = handle_complaint_action($conn, 'complaint', $complaint_id, 'complaint', 'HOD', $action, $target_role, $remarks);
 }
 
-$total_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no'");
-$pending_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Pending'");
-$progress_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'In Progress'");
-$resolved_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Resolved'");
-$escalated_to_hod = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no'") +
+$total_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no'") +
                     fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no'");
+$pending_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Pending'") +
+                      fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Pending'");
+$progress_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'In Progress'") +
+                       fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'In Progress'");
+$resolved_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Resolved'") +
+                       fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Resolved'");
+$escalated_to_hod = $total_department;
 
 $recent_complaints = mysqli_query(
     $conn,
@@ -200,7 +203,6 @@ padding:20px;
 <p><?php echo htmlspecialchars($hod_name); ?> | Dept: <?php echo htmlspecialchars((string) $department_no); ?></p>
 
 <a href="dashboard_hod.php" class="active"><i class="fa fa-home"></i> Dashboard</a>
-<a href="escalated_complaints.php"><i class="fa fa-arrow-trend-up"></i> Escalated Complaints</a>
 <a href="complaints.php"><i class="fa fa-list"></i> Department Complaints</a>
 <a href="../index.php"><i class="fa fa-home"></i> Main Portal</a>
 <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Logout</a>
@@ -271,7 +273,7 @@ padding:20px;
 <textarea name="remarks" placeholder="Remarks"></textarea>
 <button type="submit" name="action_type" value="progress">In Progress</button>
 <button type="submit" name="action_type" value="resolve">Resolve</button>
-<button type="submit" name="action_type" value="escalate">Escalate</button>
+
 </form>
 </td>
 </tr>

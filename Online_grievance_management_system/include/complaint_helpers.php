@@ -66,10 +66,84 @@ if (!function_exists('status_class')) {
     }
 }
 
+if (!function_exists('column_exists')) {
+    function column_exists($conn, $tableName, $columnName)
+    {
+        $tableName = mysqli_real_escape_string($conn, $tableName);
+        $columnName = mysqli_real_escape_string($conn, $columnName);
+        $result = @mysqli_query($conn, "SHOW COLUMNS FROM {$tableName} LIKE '{$columnName}'");
+        return $result && mysqli_num_rows($result) > 0;
+    }
+}
+
+if (!function_exists('ensure_complaint_columns')) {
+    function ensure_complaint_columns($conn)
+    {
+        static $ensured = false;
+
+        if ($ensured || !$conn) {
+            return;
+        }
+
+        $requiredColumns = [
+            'complaint' => [
+                'assigned_to' => "ALTER TABLE complaint ADD COLUMN assigned_to VARCHAR(50) NULL",
+                'escalated_to' => "ALTER TABLE complaint ADD COLUMN escalated_to VARCHAR(20) NULL",
+                'escalation_reason' => "ALTER TABLE complaint ADD COLUMN escalation_reason TEXT NULL",
+                'escalated_at' => "ALTER TABLE complaint ADD COLUMN escalated_at DATETIME NULL",
+                'handled_by_role' => "ALTER TABLE complaint ADD COLUMN handled_by_role VARCHAR(20) NULL",
+            ],
+            'staff_complaint' => [
+                'assigned_to' => "ALTER TABLE staff_complaint ADD COLUMN assigned_to VARCHAR(50) NULL",
+                'escalated_to' => "ALTER TABLE staff_complaint ADD COLUMN escalated_to VARCHAR(20) NULL",
+                'escalation_reason' => "ALTER TABLE staff_complaint ADD COLUMN escalation_reason TEXT NULL",
+                'escalated_at' => "ALTER TABLE staff_complaint ADD COLUMN escalated_at DATETIME NULL",
+                'handled_by_role' => "ALTER TABLE staff_complaint ADD COLUMN handled_by_role VARCHAR(20) NULL",
+            ],
+        ];
+
+        foreach ($requiredColumns as $tableName => $columns) {
+            foreach ($columns as $columnName => $query) {
+                if (!column_exists($conn, $tableName, $columnName)) {
+                    @mysqli_query($conn, $query);
+                }
+            }
+        }
+
+        @mysqli_query(
+            $conn,
+            "UPDATE complaint
+             SET assigned_to = CASE category_id
+                 WHEN 1 THEN 'HOD'
+                 WHEN 2 THEN 'Principal'
+                 WHEN 3 THEN 'Management'
+                 ELSE assigned_to
+             END
+             WHERE assigned_to IS NULL OR assigned_to = ''"
+        );
+
+        @mysqli_query(
+            $conn,
+            "UPDATE staff_complaint
+             SET assigned_to = CASE category_id
+                 WHEN 1 THEN 'HOD'
+                 WHEN 2 THEN 'Principal'
+                 WHEN 3 THEN 'Management'
+                 ELSE assigned_to
+             END
+             WHERE assigned_to IS NULL OR assigned_to = ''"
+        );
+
+        $ensured = true;
+    }
+}
+
 if (!function_exists('fetch_count')) {
     function fetch_count($conn, $query)
     {
-        $result = mysqli_query($conn, $query);
+        ensure_complaint_columns($conn);
+
+        $result = @mysqli_query($conn, $query);
         if (!$result) {
             return 0;
         }
@@ -101,16 +175,17 @@ if (!function_exists('insert_complaint_history')) {
 if (!function_exists('handle_complaint_action')) {
     function handle_complaint_action($conn, $tableName, $complaintId, $sourceType, $roleName, $action, $targetRole = '', $remarks = '')
     {
+        ensure_complaint_columns($conn);
+
         $allowedTables = ['complaint', 'staff_complaint'];
         if (!in_array($tableName, $allowedTables, true) || $complaintId <= 0) {
             return 'Invalid complaint selection.';
         }
 
-        $escapedTable = $tableName;
         $remarks = trim($remarks);
 
         if ($action === 'progress') {
-            $query = "UPDATE {$escapedTable}
+            $query = "UPDATE {$tableName}
                       SET status = 'In Progress',
                           handled_by_role = ?,
                           escalation_reason = CASE WHEN escalation_reason IS NULL OR escalation_reason = '' THEN ? ELSE escalation_reason END
@@ -169,9 +244,9 @@ if (!function_exists('handle_complaint_action')) {
                 return 'No higher escalation level available.';
             }
 
-            $query = "UPDATE {$escapedTable}
+            $query = "UPDATE {$tableName}
                       SET escalated_to = ?,
-                        
+                          assigned_to = ?,
                           escalation_reason = ?,
                           escalated_at = NOW(),
                           handled_by_role = ?,

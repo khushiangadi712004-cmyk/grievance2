@@ -29,14 +29,14 @@ $principal_resolved = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE a
 $escalated = mysqli_query(
     $conn,
     "SELECT 
-    'Student' COLLATE utf8mb4_general_ci AS source_label,
-    'complaint' COLLATE utf8mb4_general_ci AS source_type,
+    'Student' COLLATE utf8mb4_unicode_ci AS source_label,
+    'complaint' COLLATE utf8mb4_unicode_ci AS source_type,
     complaint_id,
-    CAST(register_no AS CHAR) COLLATE utf8mb4_general_ci AS submitted_by,
+    CAST(register_no AS CHAR) COLLATE utf8mb4_unicode_ci AS submitted_by,
     department_no,
     category_id,
-    description COLLATE utf8mb4_general_ci,
-    status COLLATE utf8mb4_general_ci,
+    description COLLATE utf8mb4_unicode_ci AS description,
+    status COLLATE utf8mb4_unicode_ci AS status,
     escalated_at
 FROM complaint 
 WHERE assigned_to = 'Principal'
@@ -44,14 +44,14 @@ WHERE assigned_to = 'Principal'
 UNION ALL
 
 SELECT 
-    'Staff' COLLATE utf8mb4_general_ci,
-    'staff' COLLATE utf8mb4_general_ci,
+    'Staff' COLLATE utf8mb4_unicode_ci,
+    'staff' COLLATE utf8mb4_unicode_ci,
     complaint_id,
-    CAST(staff_id AS CHAR) COLLATE utf8mb4_general_ci,
+    CAST(staff_id AS CHAR) COLLATE utf8mb4_unicode_ci,
     department_no,
     category_id,
-    description COLLATE utf8mb4_general_ci,
-    status COLLATE utf8mb4_general_ci,
+    description COLLATE utf8mb4_unicode_ci AS description,
+    status COLLATE utf8mb4_unicode_ci AS status,
     escalated_at
 FROM staff_complaint 
 WHERE assigned_to = 'Principal'
@@ -134,7 +134,7 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 <textarea name="remarks" placeholder="Remarks"></textarea>
 <button type="submit" name="action_type" value="progress">In Progress</button>
 <button type="submit" name="action_type" value="resolve">Resolve</button>
-<button type="submit" name="action_type" value="escalate">Escalate</button>
+
 </form>
 </td>
 </tr>

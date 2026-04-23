@@ -185,9 +185,18 @@ DROP TABLE IF EXISTS `management`;
 CREATE TABLE IF NOT EXISTS `management` (
   `management_id` int NOT NULL AUTO_INCREMENT,
   `mname` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
   PRIMARY KEY (`management_id`),
   KEY `fk_mang_id` (`management_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `management`
+--
+
+INSERT INTO `management` (`management_id`, `mname`, `password`) VALUES
+(201, 'Management One', '$2y$12$xUIhKtwrqHiTUI0/s5BbZePzv925x1v9SQLZIkPQ4MptsNn55xY4e'),
+(202, 'Management Two', '$2y$12$WPbtPYGSM9y61vHZ73tgouakdlt/CfSho5RGbP6Gx41VHb0pZRQCC');
 
 -- --------------------------------------------------------
 
@@ -257,7 +266,9 @@ CREATE TABLE IF NOT EXISTS `staff` (
 --
 
 INSERT INTO `staff` (`staff_id`, `stname`, `department_no`, `email`, `password`, `created_at`, `phone_no`, `design`) VALUES
-(101, 'Support Staff', 1, 'staff@gms.com', '$2y$10$J1VQmyhoFNVxMoVGEnlumehqK.s6GKTR99kQd09OwHMid8AOR6tGa', '2026-04-15 16:24:22', 987654321, NULL);
+(101, 'Support Staff', 1, 'staff@gms.com', '$2y$10$J1VQmyhoFNVxMoVGEnlumehqK.s6GKTR99kQd09OwHMid8AOR6tGa', '2026-04-15 16:24:22', 987654321, NULL),
+(201, 'Management One', 1, 'management1@gms.com', '$2y$12$xUIhKtwrqHiTUI0/s5BbZePzv925x1v9SQLZIkPQ4MptsNn55xY4e', '2026-04-23 10:00:00', 987650001, NULL),
+(202, 'Management Two', 1, 'management2@gms.com', '$2y$12$WPbtPYGSM9y61vHZ73tgouakdlt/CfSho5RGbP6Gx41VHb0pZRQCC', '2026-04-23 10:05:00', 987650002, NULL);
 
 -- --------------------------------------------------------
 

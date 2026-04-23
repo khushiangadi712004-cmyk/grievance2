@@ -1,36 +1,54 @@
+<?php
+$error = $_GET['error'] ?? '';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Management Login</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/loginpage.js"></script>
+
+<style>
+.error-message{
+margin-bottom:15px;
+padding:12px;
+border-radius:6px;
+background:#ffe2e2;
+color:#b42318;
+font-size:14px;
+}
+</style>
 </head>
 
 <body>
 
 <div class="login-container">
 
-<a href="loginb.php">← Change role</a>
+<a href="../index.php">&larr; Change role</a>
 
 <br><br>
 
-<button class="role-btn">🏢 Management Login</button>
+<button class="role-btn" type="button">Management Login</button>
 
 <h1>Sign In</h1>
 
 <p class="subtitle">Enter your credentials to access the portal</p>
 
-<label>Management ID / Email</label>
-<input type="text" placeholder="Enter Management ID">
+<?php if($error !== '') { ?>
+<div class="error-message"><?php echo htmlspecialchars($error); ?></div>
+<?php } ?>
 
-<label>Password</label>
+<form action="../management/login_process.php" method="post" onsubmit="return validateCaptcha()">
+<label>Management ID / Email</label>
+<input type="text" name="login_id" placeholder="Enter Management ID or email" required>
 
 <div class="password-box">
-<input type="password" id="password" placeholder="Enter password">
+<label>Password</label>
+<input type="password" name="mypswd" id="password" placeholder="Enter password" required>
 <i class="fa-solid fa-eye" id="eye" onclick="togglePassword()"></i>
 </div>
 
@@ -43,21 +61,25 @@
 </button>
 </div>
 
-<input type="text" id="captchaInput" placeholder="Enter captcha">
+<input type="text" id="captchaInput" placeholder="Enter captcha" required>
 
 <div class="options">
 <a href="#">Forgot password?</a>
 </div>
 
-<button class="login-btn" onclick="validateCaptcha()">Sign In as Management</button>
+<button class="login-btn" type="submit">Sign In as Management</button>
 
 <div class="support">
-Contact system admin if you face issues.
+If management accounts are missing, import <strong>management/management_setup.sql</strong> into the grievance database.
 </div>
 
+<div class="support">
+Demo accounts: <strong>201 / manage123</strong> and <strong>202 / manage456</strong>.
 </div>
 
+</form>
 
+</div>
 
 </body>
 </html>

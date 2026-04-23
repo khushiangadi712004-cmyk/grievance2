@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../include/conn.php';
+include '../include/complaint_helpers.php';
 
 if(!isset($_SESSION['admin_id'])){
     header('Location: admin_login.php');
@@ -11,30 +12,57 @@ $admin_name = $_SESSION['admin_name'] ?? 'Admin';
 $message = '';
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
-    $source_type = $_POST['source_type'] ?? '';
+    $source_type = $_POST['source_type'] ?? 'complaint';
     $complaint_id = (int) ($_POST['complaint_id'] ?? 0);
+    $action = $_POST['action_type'] ?? '';
     $escalated_to = $_POST['escalated_to'] ?? '';
-    $escalation_reason = trim($_POST['escalation_reason'] ?? '');
-
-    $allowed_targets = ['HOD', 'Principal'];
+    $remarks = trim($_POST['remarks'] ?? '');
     $table_name = $source_type === 'staff' ? 'staff_complaint' : 'complaint';
 
-    if($complaint_id > 0 && in_array($escalated_to, $allowed_targets, true)){
-        $stmt = mysqli_prepare(
-            $conn,
-            "UPDATE {$table_name}
-             SET escalated_to = ?, escalation_reason = ?, escalated_at = NOW(), handled_by_role = 'Admin'
-             WHERE complaint_id = ?"
-        );
-
-        if($stmt){
-            mysqli_stmt_bind_param($stmt, 'ssi', $escalated_to, $escalation_reason, $complaint_id);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-            $message = 'Complaint escalated successfully.';
-        } else {
-            $message = 'Unable to escalate complaint. Import sql/escalation_setup.sql first.';
+    if($action === 'route_by_category'){
+        $category_id = (int) ($_POST['category_id'] ?? 0);
+        $escalated_to = category_route($category_id);
+        if($remarks === ''){
+            $remarks = 'Routed by admin based on ' . category_name($category_id) . ' category.';
         }
+        $message = handle_complaint_action($conn, $table_name, $complaint_id, $source_type, 'Admin', 'escalate', $escalated_to, $remarks);
+    } elseif(in_array($action, ['progress', 'resolve'], true)){
+        $message = handle_complaint_action($conn, $table_name, $complaint_id, $source_type, 'Admin', $action, '', $remarks);
+    } elseif($action === 'escalate'){
+        $allowed_targets = ['HOD', 'Principal', 'Management'];
+
+        if($complaint_id > 0 && in_array($escalated_to, $allowed_targets, true)){
+            // Admin escalation updates both assigned_to and escalated_to.
+            $stmt = mysqli_prepare(
+                $conn,
+                "UPDATE {$table_name}
+                 SET assigned_to = ?,
+                     escalated_to = ?,
+                     escalation_reason = ?,
+                     escalated_at = NOW(),
+                     handled_by_role = 'Admin'
+                 WHERE complaint_id = ?"
+            );
+
+            if($stmt){
+                mysqli_stmt_bind_param($stmt, 'sssi', $escalated_to, $escalated_to, $remarks, $complaint_id);
+                mysqli_stmt_execute($stmt);
+
+                if(mysqli_stmt_affected_rows($stmt) > 0){
+                    $message = 'Complaint escalated successfully.';
+                } else {
+                    $message = 'No complaint was updated.';
+                }
+
+                mysqli_stmt_close($stmt);
+            } else {
+                $message = 'Unable to escalate complaint.';
+            }
+        } else {
+            $message = 'Invalid escalation request.';
+        }
+    } else {
+        $message = 'Choose a valid complaint action.';
     }
 }
 
@@ -49,6 +77,7 @@ $all_complaints = mysqli_query(
     category_id,
     description COLLATE utf8mb4_general_ci AS description,
     status COLLATE utf8mb4_general_ci AS status,
+    assigned_to COLLATE utf8mb4_general_ci AS assigned_to,
     escalated_to COLLATE utf8mb4_general_ci AS escalated_to,
     date_submitted
 FROM complaint
@@ -64,6 +93,7 @@ SELECT
     category_id,
     description COLLATE utf8mb4_general_ci AS description,
     status COLLATE utf8mb4_general_ci AS status,
+    assigned_to COLLATE utf8mb4_general_ci AS assigned_to,
     escalated_to COLLATE utf8mb4_general_ci AS escalated_to,
     date_submitted
 FROM staff_complaint
@@ -111,51 +141,58 @@ button{background:#1d4f91;color:#fff;border:none;margin-top:8px;cursor:pointer;}
 <p>Logged in as <?php echo htmlspecialchars($admin_name); ?></p>
 <a href="dashboard_admin.php"><i class="fa fa-chart-line"></i> Dashboard</a>
 <a href="manage_complaints.php" class="active"><i class="fa fa-arrow-up-right-dots"></i> Complaint Control</a>
-<a href="student_module.php"><i class="fa fa-users"></i> Student Module</a>
+<a href="student_module.php"><i class="fa fa-user-graduate"></i> Student Module</a>
+<a href="staff_module.php"><i class="fa fa-user-pen"></i> Staff Module</a>
 <a href="../index.php"><i class="fa fa-home"></i> Main Portal</a>
 <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Logout</a>
 </div>
 <div class="main">
 <div class="header">
 <h1>Complaint Control</h1>
-<p>Escalate unresolved student or staff complaints to HOD or Principal.</p>
+<p>Route complaints by category and resolve them from the admin panel. Academic goes to HOD, Infrastructure goes to Principal, and Administration goes to Management.</p>
 </div>
 <?php if($message !== '') { ?><div class="message"><?php echo htmlspecialchars($message); ?></div><?php } ?>
 <div class="table-wrap">
 <table>
-<tr><th>ID</th><th>Source</th><th>Submitted By</th><th>Dept</th><th>Category</th><th>Description</th><th>Status</th><th>Escalated To</th><th>Escalate</th></tr>
+<tr><th>ID</th><th>Source</th><th>Submitted By</th><th>Dept</th><th>Category</th><th>Route</th><th>Description</th><th>Status</th><th>Assigned To</th><th>Escalated To</th><th>Actions</th></tr>
 <?php if($all_complaints && mysqli_num_rows($all_complaints) > 0) { ?>
 <?php while($row = mysqli_fetch_assoc($all_complaints)) { ?>
 <tr>
 <td><?php echo htmlspecialchars((string) ($row['complaint_id'] ?? '')); ?></td>
 <td><span class="tag"><?php echo htmlspecialchars((string) ($row['source_label'] ?? '')); ?></span></td>
 <td><?php echo htmlspecialchars((string) ($row['submitted_by'] ?? '')); ?></td>
-<td><?php echo htmlspecialchars((string) ($row['department_no'] ?? '')); ?></td>
-<td><?php echo htmlspecialchars((string) ($row['category_id'] ?? '')); ?></td>
+<td><?php echo htmlspecialchars(department_name((int) ($row['department_no'] ?? 0))); ?></td>
+<td><?php echo htmlspecialchars(category_name((int) ($row['category_id'] ?? 0))); ?></td>
+<td><span class="tag"><?php echo htmlspecialchars(category_route((int) ($row['category_id'] ?? 0))); ?></span></td>
 <td><?php echo htmlspecialchars((string) ($row['description'] ?? '')); ?></td>
-<td><span class="status <?php if(($row['status'] ?? '') === 'Pending'){echo 'pending';} elseif(($row['status'] ?? '') === 'In Progress'){echo 'progress';} else {echo 'resolved';} ?>"><?php echo htmlspecialchars((string) ($row['status'] ?? '')); ?></span></td>
+<td><span class="status <?php echo status_class((string) ($row['status'] ?? 'Pending')); ?>"><?php echo htmlspecialchars((string) ($row['status'] ?? '')); ?></span></td>
+<td><?php echo htmlspecialchars((string) ($row['assigned_to'] ?? '')); ?></td>
 <td><?php echo htmlspecialchars((string) ($row['escalated_to'] ?? 'Not Escalated')); ?></td>
 <td>
 <form method="post">
 <input type="hidden" name="source_type" value="<?php echo htmlspecialchars((string) ($row['source_type'] ?? 'complaint')); ?>">
 <input type="hidden" name="complaint_id" value="<?php echo htmlspecialchars((string) ($row['complaint_id'] ?? '0')); ?>">
-<select name="escalated_to" required>
-<option value="">Choose level</option>
-<option value="HOD">Escalate to HOD</option>
-<option value="Principal">Escalate to Principal</option>
+<input type="hidden" name="category_id" value="<?php echo htmlspecialchars((string) ($row['category_id'] ?? '0')); ?>">
+<textarea name="remarks" placeholder="Remarks or reason"><?php echo htmlspecialchars('Category route: ' . category_name((int) ($row['category_id'] ?? 0))); ?></textarea>
+<select name="escalated_to">
+<option value="">Choose role</option>
+<option value="HOD">HOD</option>
+<option value="Principal">Principal</option>
+<option value="Management">Management</option>
 </select>
-<textarea name="escalation_reason" placeholder="Reason for escalation"></textarea>
-<button type="submit">Escalate</button>
+<button type="submit" name="action_type" value="route_by_category">Route by Category</button>
+<button type="submit" name="action_type" value="escalate">Escalate</button>
+<button type="submit" name="action_type" value="progress">Mark In Progress</button>
+<button type="submit" name="action_type" value="resolve">Resolve</button>
 </form>
 </td>
 </tr>
 <?php } ?>
 <?php } else { ?>
-<tr><td colspan="9">No complaints found.</td></tr>
+<tr><td colspan="11">No complaints found.</td></tr>
 <?php } ?>
 </table>
 </div>
 </div>
 </body>
 </html>
-

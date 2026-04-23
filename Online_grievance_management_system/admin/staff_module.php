@@ -12,42 +12,65 @@ $admin_name = $_SESSION['admin_name'] ?? 'Admin';
 $message = '';
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
-    $staff_id = (int) ($_POST['staff_id'] ?? 0);
-    $stname = trim($_POST['stname'] ?? '');
+    $id = trim($_POST['id'] ?? '');
+    $role = trim($_POST['role'] ?? '');
+    $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
-    $department_no = (int) ($_POST['department_no'] ?? 0);
+    $department_no = ($_POST['department_no'] === '' ? NULL : (int) ($_POST['department_no'] ?? 0));
     $phone_no = trim($_POST['phone_no'] ?? '');
     $design = trim($_POST['design'] ?? '');
 
-    if($staff_id > 0 && $stname !== '' && $email !== ''){
-        $stmt = mysqli_prepare(
-            $conn,
-            "UPDATE staff
-             SET stname = ?, email = ?, department_no = ?, phone_no = ?, design = ?
-             WHERE staff_id = ?"
-        );
+    if($id !== '' && $name !== '' && $email !== ''){
+        if($role === 'staff'){
+            $id_int = (int) $id;
+            $stmt = mysqli_prepare(
+                $conn,
+                "UPDATE staff SET stname = ?, email = ?, department_no = ?, phone_no = ?, design = ? WHERE staff_id = ?"
+            );
+            mysqli_stmt_bind_param($stmt, 'ssissi', $name, $email, $department_no, $phone_no, $design, $id_int);
+        } elseif($role === 'hod'){
+            $stmt = mysqli_prepare(
+                $conn,
+                "UPDATE hod SET hod_name = ?, email = ?, department_no = ? WHERE hod_id = ?"
+            );
+            mysqli_stmt_bind_param($stmt, 'ssis', $name, $email, $department_no, $id);
+        } elseif($role === 'principal'){
+            $stmt = mysqli_prepare(
+                $conn,
+                "UPDATE principal SET principal_name = ?, email = ? WHERE principal_id = ?"
+            );
+            mysqli_stmt_bind_param($stmt, 'sss', $name, $email, $id);
+        } else {
+            $message = 'Invalid role.';
+            $stmt = false;
+        }
 
         if($stmt){
-            mysqli_stmt_bind_param($stmt, 'ssissi', $stname, $email, $department_no, $phone_no, $design, $staff_id);
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
-            $message = 'Staff profile updated successfully.';
+            $message = ucfirst($role) . ' profile updated successfully.';
         } else {
-            $message = 'Unable to update staff profile.';
+            $message = 'Unable to update ' . $role . ' profile.';
         }
     } else {
-        $message = 'Enter valid staff details before saving.';
+        $message = 'Enter valid details before saving.';
     }
 }
 
 $staffMembers = mysqli_query(
     $conn,
-    "SELECT s.staff_id, s.stname, s.email, s.department_no, s.phone_no, s.design,
+    "(SELECT CAST(s.staff_id AS CHAR) COLLATE utf8mb4_general_ci AS id, s.stname COLLATE utf8mb4_general_ci AS name, s.email COLLATE utf8mb4_general_ci AS email, s.department_no, s.phone_no, s.design, 'staff' COLLATE utf8mb4_general_ci AS role,
             COUNT(sc.complaint_id) AS total_complaints
      FROM staff s
      LEFT JOIN staff_complaint sc ON sc.staff_id = s.staff_id
-     GROUP BY s.staff_id, s.stname, s.email, s.department_no, s.phone_no, s.design
-     ORDER BY s.stname ASC"
+     GROUP BY s.staff_id, s.stname, s.email, s.department_no, s.phone_no, s.design)
+    UNION ALL
+    (SELECT h.hod_id COLLATE utf8mb4_general_ci AS id, h.hod_name COLLATE utf8mb4_general_ci AS name, h.email COLLATE utf8mb4_general_ci AS email, h.department_no, NULL AS phone_no, NULL AS design, 'hod' COLLATE utf8mb4_general_ci AS role, 0 AS total_complaints
+     FROM hod h)
+    UNION ALL
+    (SELECT p.principal_id COLLATE utf8mb4_general_ci AS id, p.principal_name COLLATE utf8mb4_general_ci AS name, p.email COLLATE utf8mb4_general_ci AS email, NULL AS department_no, NULL AS phone_no, NULL AS design, 'principal' COLLATE utf8mb4_general_ci AS role, 0 AS total_complaints
+     FROM principal p)
+    ORDER BY name ASC"
 );
 ?>
 <!DOCTYPE html>
@@ -55,7 +78,7 @@ $staffMembers = mysqli_query(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Staff Module</title>
+<title>Staff and Roles Module</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
@@ -86,15 +109,15 @@ button{padding:10px 14px;border:none;border-radius:8px;background:#1d4f91;color:
 <a href="dashboard_admin.php"><i class="fa fa-chart-line"></i> Dashboard</a>
 <a href="manage_complaints.php"><i class="fa fa-arrow-up-right-dots"></i> Complaint Control</a>
 <a href="student_module.php"><i class="fa fa-user-graduate"></i> Student Module</a>
-<a href="staff_module.php" class="active"><i class="fa fa-user-pen"></i> Staff Module</a>
+<a href="staff_module.php" class="active"><i class="fa fa-user-pen"></i> User Module</a>
 <a href="../index.php"><i class="fa fa-home"></i> Main Portal</a>
 <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Logout</a>
 </div>
 
 <div class="main">
 <div class="header">
-<h1>Staff Module</h1>
-<p>Edit staff profile details directly from the admin page.</p>
+<h1>Staff and Roles Module</h1>
+<p>Edit profiles for staff, HOD, and principal.</p>
 </div>
 
 <?php if($message !== '') { ?>
@@ -104,7 +127,7 @@ button{padding:10px 14px;border:none;border-radius:8px;background:#1d4f91;color:
 <div class="table-wrap">
 <table>
 <tr>
-<th>Staff ID</th>
+<th>ID</th>
 <th>Name</th>
 <th>Email</th>
 <th>Department</th>
@@ -118,28 +141,30 @@ button{padding:10px 14px;border:none;border-radius:8px;background:#1d4f91;color:
 <tr>
 <form method="post">
 <td>
-<?php echo htmlspecialchars((string) ($row['staff_id'] ?? '')); ?>
-<input type="hidden" name="staff_id" value="<?php echo htmlspecialchars((string) ($row['staff_id'] ?? '')); ?>">
+<?php echo htmlspecialchars($row['id']); ?>
+<input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']); ?>">
+<input type="hidden" name="role" value="<?php echo htmlspecialchars($row['role']); ?>">
 </td>
-<td><input type="text" name="stname" value="<?php echo htmlspecialchars((string) ($row['stname'] ?? '')); ?>" required></td>
-<td><input type="email" name="email" value="<?php echo htmlspecialchars((string) ($row['email'] ?? '')); ?>" required></td>
+<td><input type="text" name="name" value="<?php echo htmlspecialchars($row['name']); ?>" required></td>
+<td><input type="email" name="email" value="<?php echo htmlspecialchars($row['email']); ?>" required></td>
 <td>
-<select name="department_no" required>
+<select name="department_no">
+<option value="" <?php echo ($row['department_no'] === NULL ? 'selected' : ''); ?>>N/A</option>
 <option value="1" <?php echo ((int) ($row['department_no'] ?? 0) === 1 ? 'selected' : ''); ?>>BCA</option>
 <option value="2" <?php echo ((int) ($row['department_no'] ?? 0) === 2 ? 'selected' : ''); ?>>BSC</option>
 <option value="3" <?php echo ((int) ($row['department_no'] ?? 0) === 3 ? 'selected' : ''); ?>>B.COM</option>
 <option value="4" <?php echo ((int) ($row['department_no'] ?? 0) === 4 ? 'selected' : ''); ?>>BBA</option>
 </select>
 </td>
-<td><input type="text" name="phone_no" value="<?php echo htmlspecialchars((string) ($row['phone_no'] ?? '')); ?>"></td>
-<td><input type="text" name="design" value="<?php echo htmlspecialchars((string) ($row['design'] ?? '')); ?>" placeholder="Designation"></td>
+<td><input type="text" name="phone_no" value="<?php echo htmlspecialchars($row['phone_no'] ?? ''); ?>"></td>
+<td><input type="text" name="design" value="<?php echo htmlspecialchars($row['design'] ?? ''); ?>" placeholder="Designation"></td>
 <td class="count"><?php echo (int) ($row['total_complaints'] ?? 0); ?></td>
 <td><button type="submit">Update</button></td>
 </form>
 </tr>
 <?php } ?>
 <?php } else { ?>
-<tr><td colspan="8">No staff records found.</td></tr>
+<tr><td colspan="8">No user records found.</td></tr>
 <?php } ?>
 </table>
 </div>

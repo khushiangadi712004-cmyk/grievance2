@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../include/conn.php';
+include '../include/complaint_helpers.php';
 
 if(!isset($_SESSION['staff_id'])){
     header('Location: staff_login.php');
@@ -14,29 +15,70 @@ $staff_design = $_SESSION['staff_design'] ?? 'Staff';
 $message = '';
 
 if(isset($_POST['submit'])){
-    $category_id = $_POST['category_id'] ?? '';
-    $selected_department = $_POST['department_no'] ?? '';
+    $category_id = (int) ($_POST['category_id'] ?? 0);
+    $selected_department = (int) ($_POST['department_no'] ?? 0);
     $description = trim($_POST['description'] ?? '');
 
-    $file_name = '';
-    if(isset($_FILES['file_upload']) && !empty($_FILES['file_upload']['name'])){
-        $file_name = basename($_FILES['file_upload']['name']);
-        $tmp_name = $_FILES['file_upload']['tmp_name'];
-        $target = "../uploads/" . $file_name;
-        move_uploaded_file($tmp_name, $target);
-    }
-
-    $status = 'Pending';
-
-    $sql = "INSERT INTO staff_complaint
-    (staff_id, category_id, department_no, description, file_upload, status, date_submitted)
-    VALUES
-    ('$staff_id', '$category_id', '$selected_department', '$description', '$file_name', '$status', NOW())";
-
-    if(mysqli_query($conn, $sql)){
-        $message = 'Complaint submitted successfully.';
+    if(!in_array($category_id, [1, 2, 3], true) || $selected_department <= 0 || $description === ''){
+        $message = 'Invalid complaint details.';
     } else {
-        $message = 'Unable to submit complaint. Import staff/staff_complaint_setup.sql first if the table is missing.';
+        switch ($category_id) {
+            case 1:
+                $assigned_to = 'HOD';
+                break;
+            case 2:
+                $assigned_to = 'Principal';
+                break;
+            case 3:
+                $assigned_to = 'Management';
+                break;
+            default:
+                $assigned_to = '';
+                break;
+        }
+        $handled_by_role = 'System';
+        $status = 'Pending';
+
+        $file_name = '';
+        if(isset($_FILES['file_upload']) && !empty($_FILES['file_upload']['name'])){
+            $file_name = basename($_FILES['file_upload']['name']);
+            $tmp_name = $_FILES['file_upload']['tmp_name'];
+            $target = "../uploads/" . $file_name;
+            move_uploaded_file($tmp_name, $target);
+        }
+
+        // Auto route staff complaint by category using prepared statement.
+        $stmt = mysqli_prepare(
+            $conn,
+            "INSERT INTO staff_complaint
+            (staff_id, category_id, department_no, description, file_upload, assigned_to, handled_by_role, status, date_submitted)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())"
+        );
+
+        if($stmt){
+            mysqli_stmt_bind_param(
+                $stmt,
+                'iiisssss',
+                $staff_id,
+                $category_id,
+                $selected_department,
+                $description,
+                $file_name,
+                $assigned_to,
+                $handled_by_role,
+                $status
+            );
+
+            if(mysqli_stmt_execute($stmt)){
+                $message = 'Complaint submitted successfully.';
+            } else {
+                $message = 'Unable to submit complaint.';
+            }
+
+            mysqli_stmt_close($stmt);
+        } else {
+            $message = 'Unable to prepare complaint submission.';
+        }
     }
 }
 ?>
@@ -202,6 +244,14 @@ padding:20px;
 <option value="3">Administration</option>
 </select>
 
+<label>Department</label>
+<select name="department_no" required>
+<option value="">Select Department</option>
+<option value="1" <?php echo ($department_no == 1 ? 'selected' : ''); ?>>BCA</option>
+<option value="2" <?php echo ($department_no == 2 ? 'selected' : ''); ?>>BSC</option>
+<option value="3" <?php echo ($department_no == 3 ? 'selected' : ''); ?>>B.COM</option>
+<option value="4" <?php echo ($department_no == 4 ? 'selected' : ''); ?>>BBA</option>
+</select>
 
 <label>Description</label>
 <textarea name="description" placeholder="Describe your grievance in detail..." required></textarea>

@@ -37,11 +37,12 @@ let entered=document.getElementById("captchaInput").value;
 let real=localStorage.getItem("captchaCode");
 
 if(entered==real){
-alert("Login successful");
+return true;
 }
 else{
 alert("Invalid captcha");
 generateCaptcha();
+return false;
 }
 
 }

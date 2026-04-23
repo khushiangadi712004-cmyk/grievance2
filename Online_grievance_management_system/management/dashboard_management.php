@@ -8,6 +8,8 @@ if(!isset($_SESSION['management_id'])){
     exit();
 }
 
+ensure_complaint_columns($conn);
+
 $management_name = $_SESSION['management_name'] ?? 'Management';
 $message = '';
 
@@ -27,11 +29,11 @@ $management_resolved = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE 
 
 $complaints = mysqli_query(
     $conn,
-    "SELECT 'Student' AS source_label, 'complaint' AS source_type, complaint_id, CAST(register_no AS CHAR) AS submitted_by, department_no, category_id, description, status, escalated_at
+    "SELECT 'Student' COLLATE utf8mb4_unicode_ci AS source_label, 'complaint' COLLATE utf8mb4_unicode_ci AS source_type, complaint_id, CAST(register_no AS CHAR) COLLATE utf8mb4_unicode_ci AS submitted_by, department_no, category_id, description COLLATE utf8mb4_unicode_ci AS description, status COLLATE utf8mb4_unicode_ci AS status, escalated_at
      FROM complaint
      WHERE assigned_to = 'Management'
      UNION ALL
-     SELECT 'Staff' AS source_label, 'staff' AS source_type, complaint_id, CAST(staff_id AS CHAR) AS submitted_by, department_no, category_id, description, status, escalated_at
+     SELECT 'Staff' COLLATE utf8mb4_unicode_ci AS source_label, 'staff' COLLATE utf8mb4_unicode_ci AS source_type, complaint_id, CAST(staff_id AS CHAR) COLLATE utf8mb4_unicode_ci AS submitted_by, department_no, category_id, description COLLATE utf8mb4_unicode_ci AS description, status COLLATE utf8mb4_unicode_ci AS status, escalated_at
      FROM staff_complaint
      WHERE assigned_to = 'Management'
      ORDER BY escalated_at DESC, complaint_id DESC"

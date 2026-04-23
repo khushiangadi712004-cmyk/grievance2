@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Apr 22, 2026 at 09:46 AM
+-- Generation Time: Apr 23, 2026 at 10:35 AM
 -- Server version: 8.4.7
 -- PHP Version: 8.3.28
 
@@ -70,13 +70,13 @@ CREATE TABLE IF NOT EXISTS `category` (
 DROP TABLE IF EXISTS `complaint`;
 CREATE TABLE IF NOT EXISTS `complaint` (
   `complaint_id` int NOT NULL AUTO_INCREMENT,
-  `register_no` int NOT NULL,
+  `register_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `staff_id` int DEFAULT NULL,
   `category_id` int NOT NULL,
   `department_no` int NOT NULL,
   `description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `file_upload` blob NOT NULL,
-  `status` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `remarks` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `date_submitted` datetime NOT NULL,
   `date_resolved` datetime NOT NULL,
@@ -90,22 +90,22 @@ CREATE TABLE IF NOT EXISTS `complaint` (
   KEY `fk_stud_id` (`register_no`) USING BTREE,
   KEY `fk_dept_no` (`department_no`) USING BTREE,
   KEY `fk_staff_id` (`staff_id`) USING BTREE
-) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `complaint`
 --
 
 INSERT INTO `complaint` (`complaint_id`, `register_no`, `staff_id`, `category_id`, `department_no`, `description`, `file_upload`, `status`, `remarks`, `date_submitted`, `date_resolved`, `escalated_to`, `escalation_reason`, `escalated_at`, `handled_by_role`, `assigned_to`) VALUES
-(1, 0, NULL, 1, 1, 'kjfoieqfyqwif', 0x3133343130313935343032333630353031382e6a7067, 'Pending', '', '2026-03-16 15:21:36', '0000-00-00 00:00:00', NULL, NULL, NULL, NULL, NULL),
-(2, 0, NULL, 1, 1, 'wefjhfouh', 0x3133343130363836353730363036303637392e6a7067, 'Pending', '', '2026-03-16 15:26:47', '0000-00-00 00:00:00', NULL, NULL, NULL, NULL, NULL),
-(3, 0, NULL, 1, 1, 'wefjhfouh', 0x3133343130363836353730363036303637392e6a7067, 'Pending', '', '2026-03-16 15:31:27', '0000-00-00 00:00:00', NULL, NULL, NULL, NULL, NULL),
-(4, 0, NULL, 1, 1, 'xyz', 0x3133343130313935343032333630353031382e6a7067, 'Pending', '', '2026-03-16 15:32:19', '0000-00-00 00:00:00', NULL, NULL, NULL, NULL, NULL),
-(5, 0, NULL, 1, 1, 'wefjhfouh', 0x3133343130363836353730363036303637392e6a7067, 'Pending', '', '2026-03-16 16:05:11', '0000-00-00 00:00:00', NULL, NULL, NULL, NULL, NULL),
-(6, 0, NULL, 1, 1, 'light problem', 0x6f70656e746865617472652e6a70672e6a706567, 'Pending', '', '2026-03-24 23:12:18', '0000-00-00 00:00:00', NULL, NULL, NULL, NULL, NULL),
-(7, 0, NULL, 2, 1, 'Two tube lights in Classroom BCA-204 are not working properly, making evening lectures difficult to attend.', 0x636c617373726f6f6d2d6c696768742d69737375652e6a7067, 'Pending', '', '2026-03-18 09:20:00', '0000-00-00 00:00:00', NULL, NULL, NULL, NULL, NULL),
-(8, 0, NULL, 2, 2, 'Water leakage is visible near the science block corridor after rainfall, and the floor becomes slippery during class hours.', 0x636f727269646f722d77617465722d6c65616b2e6a7067, 'In Progress', '', '2026-03-20 11:10:00', '0000-00-00 00:00:00', NULL, NULL, NULL, NULL, NULL),
-(9, 24, NULL, 3, 3, 'light is not working', 0x6c696768742e6a666966, 'Pending', '', '2026-04-21 13:49:22', '0000-00-00 00:00:00', NULL, NULL, NULL, NULL, NULL);
+(13, '24BCA104', NULL, 2, 1, 'Water leakage in computer lab', '', 'Pending', '', '2026-04-23 15:22:43', '0000-00-00 00:00:00', NULL, NULL, NULL, 'System', 'Principal'),
+(11, '24BCA102', NULL, 1, 1, 'Wrong timetable uploaded for semester', '', 'Pending', '', '2026-04-23 15:22:43', '0000-00-00 00:00:00', NULL, NULL, NULL, 'System', 'HOD'),
+(7, '0', NULL, 2, 1, 'Two tube lights in Classroom BCA-204 are not working properly, making evening lectures difficult to attend.', 0x636c617373726f6f6d2d6c696768742d69737375652e6a7067, 'Pending', '', '2026-03-18 09:20:00', '0000-00-00 00:00:00', NULL, NULL, NULL, 'System', 'Principal'),
+(8, '0', NULL, 2, 2, 'Water leakage is visible near the science block corridor after rainfall, and the floor becomes slippery during class hours.', 0x636f727269646f722d77617465722d6c65616b2e6a7067, 'In Progress', '', '2026-03-20 11:10:00', '0000-00-00 00:00:00', NULL, NULL, NULL, 'System', 'Principal'),
+(9, '24', NULL, 3, 3, 'light is not working', 0x6c696768742e6a666966, 'Pending', '', '2026-04-21 13:49:22', '0000-00-00 00:00:00', 'Principal', '', '2026-04-22 15:56:35', 'Admin', 'Management'),
+(12, '24BCA103', NULL, 2, 1, 'Classroom projector not working', '', 'Pending', '', '2026-04-23 15:22:43', '0000-00-00 00:00:00', NULL, NULL, NULL, 'System', 'Principal'),
+(10, '24BCA101', NULL, 1, 1, 'Issue with internal marks not updated', '', 'Pending', '', '2026-04-23 15:22:43', '0000-00-00 00:00:00', NULL, NULL, NULL, 'System', 'HOD'),
+(14, '24BCA105', NULL, 3, 1, 'Delay in scholarship processing', '', 'Pending', '', '2026-04-23 15:22:43', '0000-00-00 00:00:00', NULL, NULL, NULL, 'System', 'Management'),
+(15, '24BCA106', NULL, 3, 1, 'ID card not issued yet', '', 'Pending', '', '2026-04-23 15:22:43', '0000-00-00 00:00:00', NULL, NULL, NULL, 'System', 'Management');
 
 -- --------------------------------------------------------
 
@@ -123,7 +123,18 @@ CREATE TABLE IF NOT EXISTS `complaint_history` (
   `handled_by_role` varchar(50) DEFAULT NULL,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `complaint_history`
+--
+
+INSERT INTO `complaint_history` (`id`, `complaint_id`, `source_type`, `status`, `remarks`, `handled_by_role`, `updated_at`) VALUES
+(1, 6, 'complaint', 'Resolved', '', 'HOD', '2026-04-22 15:40:15'),
+(2, 6, 'complaint', 'Escalated to Principal', '', 'HOD', '2026-04-22 15:40:20'),
+(3, 6, 'complaint', 'Escalated to Principal', '', 'HOD', '2026-04-22 15:43:20'),
+(4, 2, 'staff', 'Escalated to Management', '', 'Principal', '2026-04-23 14:50:34'),
+(5, 6, 'complaint', 'Escalated to Management', '', 'Principal', '2026-04-23 14:50:44');
 
 -- --------------------------------------------------------
 
@@ -206,9 +217,18 @@ DROP TABLE IF EXISTS `management`;
 CREATE TABLE IF NOT EXISTS `management` (
   `management_id` int NOT NULL AUTO_INCREMENT,
   `mname` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`management_id`),
   KEY `fk_mang_id` (`management_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=203 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `management`
+--
+
+INSERT INTO `management` (`management_id`, `mname`, `password`) VALUES
+(201, 'Management One', '$2y$12$xUIhKtwrqHiTUI0/s5BbZePzv925x1v9SQLZIkPQ4MptsNn55xY4e'),
+(202, 'Management Two', '$2y$12$WPbtPYGSM9y61vHZ73tgouakdlt/CfSho5RGbP6Gx41VHb0pZRQCC');
 
 -- --------------------------------------------------------
 
@@ -278,7 +298,9 @@ CREATE TABLE IF NOT EXISTS `staff` (
 --
 
 INSERT INTO `staff` (`staff_id`, `stname`, `department_no`, `email`, `password`, `created_at`, `phone_no`, `design`) VALUES
-(101, 'Support Staff2', 3, 'staff@gms.com', '$2y$10$J1VQmyhoFNVxMoVGEnlumehqK.s6GKTR99kQd09OwHMid8AOR6tGa', '2026-04-15 16:24:22', 987654321, 'staff');
+(101, 'Support Staff2', 3, 'staff@gms.com', '$2y$10$J1VQmyhoFNVxMoVGEnlumehqK.s6GKTR99kQd09OwHMid8AOR6tGa', '2026-04-15 16:24:22', 987654321, 'staff'),
+(201, 'Management One', 1, 'management1@gms.com', '$2y$12$xUIhKtwrqHiTUI0/s5BbZePzv925x1v9SQLZIkPQ4MptsNn55xY4e', '2026-04-23 15:12:04', 987650001, 'management'),
+(202, 'Management Two', 1, 'management2@gms.com', '$2y$12$WPbtPYGSM9y61vHZ73tgouakdlt/CfSho5RGbP6Gx41VHb0pZRQCC', '2026-04-23 15:12:04', 987650002, 'staff');
 
 -- --------------------------------------------------------
 
@@ -300,6 +322,7 @@ CREATE TABLE IF NOT EXISTS `staff_complaint` (
   `escalation_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `escalated_at` datetime DEFAULT NULL,
   `handled_by_role` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `assigned_to` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`complaint_id`),
   KEY `fk_staff_complaint_staff` (`staff_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -308,10 +331,9 @@ CREATE TABLE IF NOT EXISTS `staff_complaint` (
 -- Dumping data for table `staff_complaint`
 --
 
-INSERT INTO `staff_complaint` (`complaint_id`, `staff_id`, `category_id`, `department_no`, `description`, `file_upload`, `status`, `date_submitted`, `escalated_to`, `escalation_reason`, `escalated_at`, `handled_by_role`) VALUES
-(1, 101, 1, 2, 'Classroom Fan is not working', 'classroom_image.png', 'Pending', '2026-04-15 16:45:27', 'HOD', 'not able to solve', '2026-04-16 17:39:30', 'Admin'),
-(2, 101, 2, 2, 'qwertyuiop', 'WhatsApp Image 2026-04-15 at 3.58.25 PM.jpeg', 'Pending', '2026-04-16 14:05:35', 'HOD', 'categorized to hod so', '2026-04-21 13:42:07', 'Admin'),
-(3, 101, 1, 3, 'wifi issue', 'wifi_issue.jpg', 'Pending', '2026-04-21 15:12:15', NULL, NULL, NULL, NULL);
+INSERT INTO `staff_complaint` (`complaint_id`, `staff_id`, `category_id`, `department_no`, `description`, `file_upload`, `status`, `date_submitted`, `escalated_to`, `escalation_reason`, `escalated_at`, `handled_by_role`, `assigned_to`) VALUES
+(1, 101, 1, 2, 'Classroom Fan is not working', 'classroom_image.png', 'Pending', '2026-04-15 16:45:27', 'HOD', 'comes under him', '2026-04-22 15:43:12', 'Admin', 'HOD'),
+(3, 101, 1, 3, 'wifi issue', 'wifi_issue.jpg', 'Pending', '2026-04-21 15:12:15', 'Principal', '', '2026-04-23 14:00:36', 'Admin', 'HOD');
 
 -- --------------------------------------------------------
 
@@ -321,7 +343,7 @@ INSERT INTO `staff_complaint` (`complaint_id`, `staff_id`, `category_id`, `depar
 
 DROP TABLE IF EXISTS `student`;
 CREATE TABLE IF NOT EXISTS `student` (
-  `register_no` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `register_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `sname` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `mypswd` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -351,12 +373,6 @@ INSERT INTO `student` (`register_no`, `sname`, `email`, `mypswd`, `phone`, `crea
 --
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `management`
---
-ALTER TABLE `management`
-  ADD CONSTRAINT `management_ibfk_1` FOREIGN KEY (`management_id`) REFERENCES `staff` (`staff_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `staff`

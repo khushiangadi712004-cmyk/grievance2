@@ -12,13 +12,32 @@ $department_no = $_SESSION['hod_department_no'] ?? '';
 
 $escalated = mysqli_query(
     $conn,
-    "SELECT 'Student' AS source_label, complaint_id, register_no AS submitted_by, category_id, description, status, escalation_reason, escalated_at
+    "SELECT 
+        'Student' AS source_label,
+        complaint_id,
+        register_no COLLATE utf8mb4_general_ci AS submitted_by,
+        category_id,
+        description COLLATE utf8mb4_general_ci AS description,
+        status COLLATE utf8mb4_general_ci AS status,
+        escalation_reason COLLATE utf8mb4_general_ci AS escalation_reason,
+        escalated_at
      FROM complaint
      WHERE department_no = '$department_no' AND escalated_to = 'HOD'
+
      UNION ALL
-     SELECT 'Staff' AS source_label, complaint_id, CAST(staff_id AS CHAR) AS submitted_by, category_id, description, status, escalation_reason, escalated_at
+
+     SELECT 
+        'Staff' AS source_label,
+        complaint_id,
+        CAST(staff_id AS CHAR) COLLATE utf8mb4_general_ci AS submitted_by,
+        category_id,
+        description COLLATE utf8mb4_general_ci AS description,
+        status COLLATE utf8mb4_general_ci AS status,
+        escalation_reason COLLATE utf8mb4_general_ci AS escalation_reason,
+        escalated_at
      FROM staff_complaint
      WHERE department_no = '$department_no' AND escalated_to = 'HOD'
+
      ORDER BY escalated_at DESC, complaint_id DESC"
 );
 ?>
