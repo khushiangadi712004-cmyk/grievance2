@@ -57,9 +57,11 @@ if(!password_verify($mypswd, $management['password']) && $mypswd !== $management
     redirect_with_error('Wrong password.');
 }
 
+session_regenerate_id(true);
 $_SESSION['management_id'] = $management['management_id'];
 $_SESSION['management_name'] = $management['management_name'];
 $_SESSION['management_email'] = $management['email'];
+$_SESSION['role'] = 'Management';
 
 header('Location: dashboard_management.php');
 exit();

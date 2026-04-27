@@ -7,7 +7,7 @@ session_unset();
 session_destroy();
 
 /* redirect to login page */
-header("Location: index.php");
+header("Location: student_login.php");
 
 exit();
 

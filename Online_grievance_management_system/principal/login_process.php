@@ -38,9 +38,11 @@ if(!password_verify($mypswd, $principal['password']) && $mypswd !== $principal['
     redirect_with_error('Wrong password.');
 }
 
+session_regenerate_id(true);
 $_SESSION['principal_id'] = $principal['principal_id'];
 $_SESSION['principal_name'] = $principal['principal_name'];
 $_SESSION['principal_email'] = $principal['email'];
+$_SESSION['role'] = 'Principal';
 
 header('Location: dashboard_principal.php');
 exit();

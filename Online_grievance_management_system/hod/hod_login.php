@@ -1,4 +1,11 @@
 <?php
+session_start();
+
+if(isset($_SESSION['hod_id'])){
+    header('Location: dashboard_hod.php');
+    exit();
+}
+
 $error = $_GET['error'] ?? '';
 ?>
 <!DOCTYPE html>
@@ -68,8 +75,7 @@ font-size:14px;
 
 <button class="login-btn" type="submit">Sign In as HOD</button>
 
-<div class="support">
-If the HOD table is missing, import <strong>hod/hod_setup.sql</strong> into the grievance database.
+
 </div>
 </form>
 

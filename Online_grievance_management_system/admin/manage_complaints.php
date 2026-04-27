@@ -69,32 +69,34 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 $all_complaints = mysqli_query(
     $conn,
     "SELECT 
-    'Student' COLLATE utf8mb4_general_ci AS source_label,
-    'complaint' COLLATE utf8mb4_general_ci AS source_type,
+    'Student' AS source_label,
+    'complaint' AS source_type,
     complaint_id,
-    register_no COLLATE utf8mb4_general_ci AS submitted_by,
+    CAST(register_no AS CHAR) AS submitted_by,
     department_no,
     category_id,
-    description COLLATE utf8mb4_general_ci AS description,
-    status COLLATE utf8mb4_general_ci AS status,
-    assigned_to COLLATE utf8mb4_general_ci AS assigned_to,
-    escalated_to COLLATE utf8mb4_general_ci AS escalated_to,
+    CAST(description AS CHAR) AS description,
+    CAST(status AS CHAR) AS status,
+    CAST(assigned_to AS CHAR) AS assigned_to,
+    CAST(escalated_to AS CHAR) AS escalated_to,
+    CAST(file_upload AS CHAR) AS file_upload,
     date_submitted
 FROM complaint
 
 UNION ALL
 
 SELECT 
-    'Staff' COLLATE utf8mb4_general_ci,
-    'staff' COLLATE utf8mb4_general_ci,
+    'Staff',
+    'staff',
     complaint_id,
-    CAST(staff_id AS CHAR) COLLATE utf8mb4_general_ci,
+    CAST(staff_id AS CHAR),
     department_no,
     category_id,
-    description COLLATE utf8mb4_general_ci AS description,
-    status COLLATE utf8mb4_general_ci AS status,
-    assigned_to COLLATE utf8mb4_general_ci AS assigned_to,
-    escalated_to COLLATE utf8mb4_general_ci AS escalated_to,
+    CAST(description AS CHAR) AS description,
+    CAST(status AS CHAR) AS status,
+    CAST(assigned_to AS CHAR) AS assigned_to,
+    CAST(escalated_to AS CHAR) AS escalated_to,
+    CAST(file_upload AS CHAR) AS file_upload,
     date_submitted
 FROM staff_complaint
 
@@ -132,6 +134,11 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 select,textarea,button{width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;}
 textarea{min-height:90px;resize:vertical;margin-top:8px;}
 button{background:#1d4f91;color:#fff;border:none;margin-top:8px;cursor:pointer;}
+.attachment{display:flex;align-items:center;gap:10px;min-width:160px;}
+.attachment img{width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #d1d5db;background:#f8fafc;}
+.attachment a{color:#1d4f91;font-weight:700;text-decoration:none;}
+.attachment a:hover{text-decoration:underline;}
+.muted{color:#6b7280;font-size:13px;}
 @media(max-width:768px){body{flex-direction:column;}.sidebar{width:100%;}.main{padding:20px;}}
 </style>
 </head>
@@ -154,9 +161,18 @@ button{background:#1d4f91;color:#fff;border:none;margin-top:8px;cursor:pointer;}
 <?php if($message !== '') { ?><div class="message"><?php echo htmlspecialchars($message); ?></div><?php } ?>
 <div class="table-wrap">
 <table>
-<tr><th>ID</th><th>Source</th><th>Submitted By</th><th>Dept</th><th>Category</th><th>Route</th><th>Description</th><th>Status</th><th>Assigned To</th><th>Escalated To</th><th>Actions</th></tr>
+<tr><th>ID</th><th>Source</th><th>Submitted By</th><th>Dept</th><th>Category</th><th>Route</th><th>Description</th><th>Attachment</th><th>Status</th><th>Assigned To</th><th>Escalated To</th><th>Actions</th></tr>
 <?php if($all_complaints && mysqli_num_rows($all_complaints) > 0) { ?>
 <?php while($row = mysqli_fetch_assoc($all_complaints)) { ?>
+<?php
+$file_name = basename((string) ($row['file_upload'] ?? ''));
+$file_path = $file_name !== '' ? '../uploads/' . rawurlencode($file_name) : '';
+$server_file_path = $file_name !== '' ? __DIR__ . '/../uploads/' . $file_name : '';
+$file_exists = $server_file_path !== '' && is_file($server_file_path);
+$file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+$image_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'jfif'];
+$is_image = $file_exists && in_array($file_ext, $image_exts, true);
+?>
 <tr>
 <td><?php echo htmlspecialchars((string) ($row['complaint_id'] ?? '')); ?></td>
 <td><span class="tag"><?php echo htmlspecialchars((string) ($row['source_label'] ?? '')); ?></span></td>
@@ -165,6 +181,22 @@ button{background:#1d4f91;color:#fff;border:none;margin-top:8px;cursor:pointer;}
 <td><?php echo htmlspecialchars(category_name((int) ($row['category_id'] ?? 0))); ?></td>
 <td><span class="tag"><?php echo htmlspecialchars(category_route((int) ($row['category_id'] ?? 0))); ?></span></td>
 <td><?php echo htmlspecialchars((string) ($row['description'] ?? '')); ?></td>
+<td>
+<?php if($file_name !== '' && $file_exists) { ?>
+<div class="attachment">
+<?php if($is_image) { ?>
+<a href="<?php echo htmlspecialchars($file_path); ?>" target="_blank">
+<img src="<?php echo htmlspecialchars($file_path); ?>" alt="Complaint attachment">
+</a>
+<?php } ?>
+<a href="<?php echo htmlspecialchars($file_path); ?>" target="_blank">View File</a>
+</div>
+<?php } elseif($file_name !== '') { ?>
+<span class="muted">Missing file: <?php echo htmlspecialchars($file_name); ?></span>
+<?php } else { ?>
+<span class="muted">No file</span>
+<?php } ?>
+</td>
 <td><span class="status <?php echo status_class((string) ($row['status'] ?? 'Pending')); ?>"><?php echo htmlspecialchars((string) ($row['status'] ?? '')); ?></span></td>
 <td><?php echo htmlspecialchars((string) ($row['assigned_to'] ?? '')); ?></td>
 <td><?php echo htmlspecialchars((string) ($row['escalated_to'] ?? 'Not Escalated')); ?></td>
@@ -189,7 +221,7 @@ button{background:#1d4f91;color:#fff;border:none;margin-top:8px;cursor:pointer;}
 </tr>
 <?php } ?>
 <?php } else { ?>
-<tr><td colspan="11">No complaints found.</td></tr>
+<tr><td colspan="12">No complaints found.</td></tr>
 <?php } ?>
 </table>
 </div>

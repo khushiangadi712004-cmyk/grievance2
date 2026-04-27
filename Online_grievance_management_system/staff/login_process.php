@@ -38,12 +38,14 @@ if(!password_verify($mypswd, $staff['password']) && $mypswd !== $staff['password
     redirect_with_error('Wrong password.');
 }
 
+session_regenerate_id(true);
 $_SESSION['staff_id'] = $staff['staff_id'];
 $_SESSION['staff_name'] = $staff['stname'];
 $_SESSION['staff_email'] = $staff['email'];
 $_SESSION['staff_department_no'] = $staff['department_no'];
 $_SESSION['staff_phone_no'] = $staff['phone_no'];
 $_SESSION['staff_design'] = $staff['design'];
+$_SESSION['role'] = 'Staff';
 
 header('Location: dashboard_staff.php');
 exit();

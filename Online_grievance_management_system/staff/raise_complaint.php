@@ -13,10 +13,19 @@ $staff_name = $_SESSION['staff_name'] ?? 'Staff';
 $department_no = $_SESSION['staff_department_no'] ?? '';
 $staff_design = $_SESSION['staff_design'] ?? 'Staff';
 $message = '';
+$dept_stmt = mysqli_prepare($conn, "SELECT department_no FROM staff WHERE staff_id = ? LIMIT 1");
+if($dept_stmt){
+    mysqli_stmt_bind_param($dept_stmt, 'i', $staff_id);
+    mysqli_stmt_execute($dept_stmt);
+    $dept_result = mysqli_stmt_get_result($dept_stmt);
+    $dept_row = mysqli_fetch_assoc($dept_result);
+    mysqli_stmt_close($dept_stmt);
+    $department_no = (int) ($dept_row['department_no'] ?? $department_no);
+}
 
 if(isset($_POST['submit'])){
     $category_id = (int) ($_POST['category_id'] ?? 0);
-    $selected_department = (int) ($_POST['department_no'] ?? 0);
+    $selected_department = (int) $department_no;
     $description = trim($_POST['description'] ?? '');
 
     if(!in_array($category_id, [1, 2, 3], true) || $selected_department <= 0 || $description === ''){
@@ -40,44 +49,47 @@ if(isset($_POST['submit'])){
         $status = 'Pending';
 
         $file_name = '';
-        if(isset($_FILES['file_upload']) && !empty($_FILES['file_upload']['name'])){
-            $file_name = basename($_FILES['file_upload']['name']);
-            $tmp_name = $_FILES['file_upload']['tmp_name'];
-            $target = "../uploads/" . $file_name;
-            move_uploaded_file($tmp_name, $target);
+        $upload_error = '';
+        $uploaded_file = save_uploaded_complaint_file('file_upload', $upload_error);
+        if($uploaded_file === false){
+            $message = $upload_error;
+        } else {
+            $file_name = $uploaded_file;
         }
 
-        // Auto route staff complaint by category using prepared statement.
-        $stmt = mysqli_prepare(
-            $conn,
-            "INSERT INTO staff_complaint
-            (staff_id, category_id, department_no, description, file_upload, assigned_to, handled_by_role, status, date_submitted)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())"
-        );
-
-        if($stmt){
-            mysqli_stmt_bind_param(
-                $stmt,
-                'iiisssss',
-                $staff_id,
-                $category_id,
-                $selected_department,
-                $description,
-                $file_name,
-                $assigned_to,
-                $handled_by_role,
-                $status
+        if($message === ''){
+            // Auto route staff complaint by category using prepared statement.
+            $stmt = mysqli_prepare(
+                $conn,
+                "INSERT INTO staff_complaint
+                (staff_id, category_id, department_no, description, file_upload, assigned_to, handled_by_role, status, date_submitted)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())"
             );
 
-            if(mysqli_stmt_execute($stmt)){
-                $message = 'Complaint submitted successfully.';
-            } else {
-                $message = 'Unable to submit complaint.';
-            }
+            if($stmt){
+                mysqli_stmt_bind_param(
+                    $stmt,
+                    'iiisssss',
+                    $staff_id,
+                    $category_id,
+                    $selected_department,
+                    $description,
+                    $file_name,
+                    $assigned_to,
+                    $handled_by_role,
+                    $status
+                );
 
-            mysqli_stmt_close($stmt);
-        } else {
-            $message = 'Unable to prepare complaint submission.';
+                if(mysqli_stmt_execute($stmt)){
+                    $message = 'Complaint submitted successfully.';
+                } else {
+                    $message = 'Unable to submit complaint.';
+                }
+
+                mysqli_stmt_close($stmt);
+            } else {
+                $message = 'Unable to prepare complaint submission.';
+            }
         }
     }
 }
@@ -245,19 +257,13 @@ padding:20px;
 </select>
 
 <label>Department</label>
-<select name="department_no" required>
-<option value="">Select Department</option>
-<option value="1" <?php echo ($department_no == 1 ? 'selected' : ''); ?>>BCA</option>
-<option value="2" <?php echo ($department_no == 2 ? 'selected' : ''); ?>>BSC</option>
-<option value="3" <?php echo ($department_no == 3 ? 'selected' : ''); ?>>B.COM</option>
-<option value="4" <?php echo ($department_no == 4 ? 'selected' : ''); ?>>BBA</option>
-</select>
+<input type="text" value="<?php echo htmlspecialchars(department_name((int) $department_no)); ?>" disabled>
 
 <label>Description</label>
 <textarea name="description" placeholder="Describe your grievance in detail..." required></textarea>
 
 <label>Upload File</label>
-<input type="file" name="file_upload">
+<input type="file" name="file_upload" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
 
 <button type="submit" name="submit" class="btn">Submit Complaint</button>
 </form>

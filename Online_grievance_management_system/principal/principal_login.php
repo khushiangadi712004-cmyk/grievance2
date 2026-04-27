@@ -1,4 +1,11 @@
 <?php
+session_start();
+
+if(isset($_SESSION['principal_id'])){
+    header('Location: dashboard_principal.php');
+    exit();
+}
+
 $error = $_GET['error'] ?? '';
 ?>
 <!DOCTYPE html>

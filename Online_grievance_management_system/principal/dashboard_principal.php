@@ -29,34 +29,40 @@ $principal_resolved = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE a
 $escalated = mysqli_query(
     $conn,
     "SELECT 
-    'Student' COLLATE utf8mb4_unicode_ci AS source_label,
-    'complaint' COLLATE utf8mb4_unicode_ci AS source_type,
-    complaint_id,
-    CAST(register_no AS CHAR) COLLATE utf8mb4_unicode_ci AS submitted_by,
-    department_no,
-    category_id,
-    description COLLATE utf8mb4_unicode_ci AS description,
-    status COLLATE utf8mb4_unicode_ci AS status,
-    escalated_at
-FROM complaint 
-WHERE assigned_to = 'Principal'
+    CONVERT('Student' USING utf8mb4) COLLATE utf8mb4_unicode_ci AS source_label,
+    CONVERT('complaint' USING utf8mb4) COLLATE utf8mb4_unicode_ci AS source_type,
+    c.complaint_id,
+    CONVERT(c.register_no USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitted_by,
+    CONVERT(s.sname USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitter_name,
+    COALESCE(s.department_no, c.department_no) AS department_no,
+    c.category_id,
+    CONVERT(c.description USING utf8mb4) COLLATE utf8mb4_unicode_ci AS description,
+    CONVERT(c.status USING utf8mb4) COLLATE utf8mb4_unicode_ci AS status,
+    c.date_submitted,
+    CONVERT(c.file_upload USING utf8mb4) COLLATE utf8mb4_unicode_ci AS file_upload
+FROM complaint c
+LEFT JOIN student s ON s.register_no = c.register_no
+WHERE c.assigned_to = 'Principal'
 
 UNION ALL
 
 SELECT 
-    'Staff' COLLATE utf8mb4_unicode_ci,
-    'staff' COLLATE utf8mb4_unicode_ci,
-    complaint_id,
-    CAST(staff_id AS CHAR) COLLATE utf8mb4_unicode_ci,
-    department_no,
-    category_id,
-    description COLLATE utf8mb4_unicode_ci AS description,
-    status COLLATE utf8mb4_unicode_ci AS status,
-    escalated_at
-FROM staff_complaint 
-WHERE assigned_to = 'Principal'
+    CONVERT('Staff' USING utf8mb4) COLLATE utf8mb4_unicode_ci,
+    CONVERT('staff' USING utf8mb4) COLLATE utf8mb4_unicode_ci,
+    sc.complaint_id,
+    CONVERT(CAST(sc.staff_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_unicode_ci,
+    CONVERT(st.stname USING utf8mb4) COLLATE utf8mb4_unicode_ci,
+    COALESCE(st.department_no, sc.department_no),
+    sc.category_id,
+    CONVERT(sc.description USING utf8mb4) COLLATE utf8mb4_unicode_ci,
+    CONVERT(sc.status USING utf8mb4) COLLATE utf8mb4_unicode_ci,
+    sc.date_submitted,
+    CONVERT(sc.file_upload USING utf8mb4) COLLATE utf8mb4_unicode_ci
+FROM staff_complaint sc
+LEFT JOIN staff st ON st.staff_id = sc.staff_id
+WHERE sc.assigned_to = 'Principal'
 
-ORDER BY escalated_at DESC, complaint_id DESC;"
+ORDER BY date_submitted DESC, complaint_id DESC;"
 );
 ?>
 <!DOCTYPE html>
@@ -91,6 +97,10 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 .actions form{display:grid;gap:8px;min-width:220px;}
 .actions textarea,.actions select,.actions button{width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;}
 .actions button{border:none;background:#7c2d12;color:#fff;cursor:pointer;}
+.complaint-image{display:flex;align-items:center;gap:10px;min-width:140px;}
+.complaint-image img{width:90px;height:68px;object-fit:cover;border-radius:8px;border:1px solid #d1d5db;background:#f8fafc;}
+.complaint-image a{color:#7c2d12;font-weight:700;text-decoration:none;}
+.muted{color:#6b7280;font-size:13px;}
 @media(max-width:768px){body{flex-direction:column;}.sidebar{width:100%;}.main{padding:20px;}}
 </style>
 </head>
@@ -115,32 +125,48 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 <div class="card"><h3>Resolved</h3><p><?php echo $principal_resolved; ?></p></div>
 </div>
 <table>
-<tr><th>ID</th><th>Source</th><th>Submitted By</th><th>Dept</th><th>Category</th><th>Description</th><th>Status</th><th>Escalated At</th><th>Action</th></tr>
+<tr><th>ID</th><th>Source</th><th>Submitted By</th><th>Department</th><th>Category</th><th>Description</th><th>Status</th><th>Date Submitted</th><th>Uploaded Image</th><th>Action</th></tr>
 <?php if($escalated && mysqli_num_rows($escalated) > 0) { ?>
 <?php while($row = mysqli_fetch_assoc($escalated)) { ?>
+<?php
+$file_name = basename((string) ($row['file_upload'] ?? ''));
+$file_path = $file_name !== '' ? '../uploads/' . rawurlencode($file_name) : '';
+$server_file_path = $file_name !== '' ? __DIR__ . '/../uploads/' . $file_name : '';
+$file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+$is_image = $file_name !== '' && is_file($server_file_path) && in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'jfif'], true);
+?>
 <tr>
 <td><?php echo htmlspecialchars((string) ($row['complaint_id'] ?? '')); ?></td>
 <td><?php echo htmlspecialchars((string) ($row['source_label'] ?? '')); ?></td>
-<td><?php echo htmlspecialchars((string) ($row['submitted_by'] ?? '')); ?></td>
+<td><?php echo htmlspecialchars((string) ($row['submitted_by'] ?? '')); ?><?php if(!empty($row['submitter_name'])) { ?><br><span class="muted"><?php echo htmlspecialchars((string) $row['submitter_name']); ?></span><?php } ?></td>
 <td><?php echo htmlspecialchars(department_name((int) ($row['department_no'] ?? 0))); ?></td>
 <td><?php echo htmlspecialchars(category_name((int) ($row['category_id'] ?? 0))); ?></td>
 <td><?php echo htmlspecialchars((string) ($row['description'] ?? '')); ?></td>
 <td><span class="status <?php echo status_class((string) ($row['status'] ?? 'Pending')); ?>"><?php echo htmlspecialchars((string) ($row['status'] ?? '')); ?></span></td>
-<td><?php echo htmlspecialchars((string) ($row['escalated_at'] ?? '')); ?></td>
+<td><?php echo htmlspecialchars((string) ($row['date_submitted'] ?? '')); ?></td>
+<td>
+<?php if($is_image) { ?>
+<div class="complaint-image">
+<a href="<?php echo htmlspecialchars($file_path); ?>" target="_blank"><img src="<?php echo htmlspecialchars($file_path); ?>" alt="Complaint image"></a>
+</div>
+<?php } else { ?>
+<span class="muted">No image</span>
+<?php } ?>
+</td>
 <td class="actions">
 <form method="post">
 <input type="hidden" name="source_type" value="<?php echo htmlspecialchars((string) ($row['source_type'] ?? 'complaint')); ?>">
 <input type="hidden" name="complaint_id" value="<?php echo htmlspecialchars((string) ($row['complaint_id'] ?? '0')); ?>">
 <textarea name="remarks" placeholder="Remarks"></textarea>
-<button type="submit" name="action_type" value="progress">In Progress</button>
 <button type="submit" name="action_type" value="resolve">Resolve</button>
+<button type="submit" name="action_type" value="progress">In Progress</button>
 
 </form>
 </td>
 </tr>
 <?php } ?>
 <?php } else { ?>
-<tr><td colspan="9">No complaints escalated to principal.</td></tr>
+<tr><td colspan="10">No complaints escalated to principal.</td></tr>
 <?php } ?>
 </table>
 </div>

@@ -1,4 +1,11 @@
 <?php
+session_start();
+
+if(isset($_SESSION['management_id'])){
+    header('Location: ../management/dashboard_management.php');
+    exit();
+}
+
 $error = $_GET['error'] ?? '';
 ?>
 <!DOCTYPE html>
@@ -69,13 +76,7 @@ font-size:14px;
 
 <button class="login-btn" type="submit">Sign In as Management</button>
 
-<div class="support">
-If management accounts are missing, import <strong>management/management_setup.sql</strong> into the grievance database.
-</div>
 
-<div class="support">
-Demo accounts: <strong>201 / manage123</strong> and <strong>202 / manage456</strong>.
-</div>
 
 </form>
 

@@ -1,26 +1,79 @@
 <?php
 session_start();
+include '../include/conn.php';
+include '../include/complaint_helpers.php';
 
-$name = $_SESSION['name'] ?? "User";
-$email = $_SESSION['email'] ?? "user@email.com";
-$department = $_SESSION['department'] ?? "Not Assigned";
+if(!isset($_SESSION['register_no'])){
+    header('Location: student_login.php');
+    exit();
+}
+
+$register_no = $_SESSION['register_no'];
+$name = $_SESSION['student_name'] ?? "User";
+$email = $_SESSION['student_email'] ?? "user@email.com";
+$department = (int) ($_SESSION['student_department_no'] ?? 0);
 $role = $_SESSION['role'] ?? "Student";
+$message = '';
+$message_class = '';
+
+$stmt = mysqli_prepare($conn, "SELECT sname, email, department_no FROM student WHERE register_no = ? LIMIT 1");
+if($stmt){
+mysqli_stmt_bind_param($stmt, 's', $register_no);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$student = mysqli_fetch_assoc($result);
+mysqli_stmt_close($stmt);
+
+if($student){
+$_SESSION['student_name'] = $student['sname'];
+$_SESSION['student_email'] = $student['email'];
+$_SESSION['student_department_no'] = $student['department_no'];
+$name = $student['sname'];
+$email = $student['email'];
+$department = (int) $student['department_no'];
+}
+}
 
 
 /* Update profile */
 if(isset($_POST['update'])){
-$_SESSION['name']=$_POST['name'];
-$_SESSION['email']=$_POST['email'];
-$_SESSION['department']=$_POST['department'];
+$new_name = trim($_POST['name'] ?? '');
+$new_email = trim($_POST['email'] ?? '');
+
+if($new_name === '' || $new_email === '' || !filter_var($new_email, FILTER_VALIDATE_EMAIL)){
+$message = 'Please enter a valid name and email.';
+$message_class = 'error-message';
+} else {
+$update_stmt = mysqli_prepare($conn, "UPDATE student SET sname = ?, email = ? WHERE register_no = ?");
+if($update_stmt){
+mysqli_stmt_bind_param($update_stmt, 'sss', $new_name, $new_email, $register_no);
+if(mysqli_stmt_execute($update_stmt)){
+$_SESSION['student_name'] = $new_name;
+$_SESSION['student_email'] = $new_email;
+$name = $new_name;
+$email = $new_email;
+$message = 'Profile updated successfully.';
+$message_class = 'success-message';
+} else {
+$message = 'Unable to update profile.';
+$message_class = 'error-message';
+}
+mysqli_stmt_close($update_stmt);
+} else {
+$message = 'Unable to prepare profile update.';
+$message_class = 'error-message';
+}
+}
 }
 
 /* Edit mode */
 $edit = isset($_GET['edit']);
 
-$name=$_SESSION['name']?? "User";
-$email=$_SESSION['email']??"user@email.com";
-$department=$_SESSION['department']?? "Not Assigned";
+$name=$_SESSION['student_name']?? "User";
+$email=$_SESSION['student_email']??"user@email.com";
+$department=(int) ($_SESSION['student_department_no']?? 0);
 $role = $_SESSION['role'] ?? "Student";
+$department_name = $department > 0 ? department_name($department) : 'Not Assigned';
 
 $initial=strtoupper(substr($name,0,1));
 ?>
@@ -123,8 +176,13 @@ display:inline-block;
 margin-top:5px;
 }
 
-.edit-btn{
+.profile-actions{
 float:right;
+display:flex;
+gap:10px;
+}
+
+.edit-btn{
 background:#f2f2f2;
 border:none;
 padding:8px 14px;
@@ -180,6 +238,32 @@ cursor:pointer;
 margin-top:10px;
 }
 
+.back-btn{
+display:inline-block;
+background:#f2f2f2;
+color:black;
+padding:8px 14px;
+border-radius:6px;
+text-decoration:none;
+}
+
+.profile-message{
+padding:12px;
+border-radius:8px;
+margin-bottom:18px;
+font-size:14px;
+}
+
+.success-message{
+background:#e7f8ed;
+color:#176b3a;
+}
+
+.error-message{
+background:#ffe2e2;
+color:#b42318;
+}
+
 </style>
 
 </head>
@@ -207,9 +291,12 @@ margin-top:10px;
 
 <div class="avatar"><?php echo $initial ?></div>
 
+<div class="profile-actions">
+<a class="back-btn" href="dashboard_user.php">&larr; Back</a>
 <a class="edit-btn" href="profile.php?edit=1">
 <i class="fa fa-edit"></i> Edit Profile
 </a>
+</div>
 
 <div class="name"><?php echo $name ?></div>
 <div class="role-tag"><?php echo $role ?></div>
@@ -221,6 +308,10 @@ margin-top:10px;
 <div class="details">
 
 <h3>Profile Details</h3>
+
+<?php if($message !== ''){ ?>
+<div class="profile-message <?php echo htmlspecialchars($message_class); ?>"><?php echo htmlspecialchars($message); ?></div>
+<?php } ?>
 
 <form method="post">
 
@@ -258,9 +349,9 @@ margin-top:10px;
 <div class="label">Department</div>
 
 <?php if($edit){ ?>
-<input type="text" name="department" value="<?php echo $department ?>">
+<input type="text" value="<?php echo htmlspecialchars($department_name); ?>" disabled>
 <?php } else { ?>
-<div class="value"><?php echo $department ?></div>
+<div class="value"><?php echo htmlspecialchars($department_name); ?></div>
 <?php } ?>
 
 </div>

@@ -14,11 +14,12 @@ $department_no = $_SESSION['hod_department_no'] ?? '';
 $message = '';
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
+    $source_type = $_POST['source_type'] ?? 'complaint';
+    $table_name = $source_type === 'staff' ? 'staff_complaint' : 'complaint';
     $complaint_id = (int) ($_POST['complaint_id'] ?? 0);
     $action = $_POST['action_type'] ?? '';
     $remarks = trim($_POST['remarks'] ?? '');
-    $target_role = $_POST['escalated_to'] ?? '';
-    $message = handle_complaint_action($conn, 'complaint', $complaint_id, 'complaint', 'HOD', $action, $target_role, $remarks);
+    $message = handle_complaint_action($conn, $table_name, $complaint_id, $source_type, 'HOD', $action, '', $remarks);
 }
 
 $total_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no'") +
@@ -31,14 +32,42 @@ $resolved_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE 
                        fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Resolved'");
 $escalated_to_hod = $total_department;
 
-$recent_complaints = mysqli_query(
+$recent_complaints = false;
+$recent_stmt = mysqli_prepare(
     $conn,
-    "SELECT complaint_id, register_no, category_id, description, status, date_submitted
-     FROM complaint
-     WHERE assigned_to = 'HOD' AND department_no = '$department_no'
-     ORDER BY complaint_id DESC
-     LIMIT 10"
+    "SELECT CONVERT('Student' USING utf8mb4) COLLATE utf8mb4_unicode_ci AS source_label, CONVERT('complaint' USING utf8mb4) COLLATE utf8mb4_unicode_ci AS source_type, c.complaint_id,
+            CONVERT(c.register_no USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitted_by,
+            CONVERT(s.sname USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitter_name,
+            COALESCE(s.department_no, c.department_no) AS department_no,
+            c.category_id,
+            CONVERT(c.description USING utf8mb4) COLLATE utf8mb4_unicode_ci AS description,
+            CONVERT(c.status USING utf8mb4) COLLATE utf8mb4_unicode_ci AS status,
+            c.date_submitted,
+            CONVERT(c.file_upload USING utf8mb4) COLLATE utf8mb4_unicode_ci AS file_upload
+     FROM complaint c
+     LEFT JOIN student s ON s.register_no = c.register_no
+     WHERE c.assigned_to = 'HOD' AND c.department_no = ?
+     UNION ALL
+     SELECT CONVERT('Staff' USING utf8mb4) COLLATE utf8mb4_unicode_ci AS source_label, CONVERT('staff' USING utf8mb4) COLLATE utf8mb4_unicode_ci AS source_type, sc.complaint_id,
+            CONVERT(CAST(sc.staff_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitted_by,
+            CONVERT(st.stname USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitter_name,
+            COALESCE(st.department_no, sc.department_no) AS department_no,
+            sc.category_id,
+            CONVERT(sc.description USING utf8mb4) COLLATE utf8mb4_unicode_ci AS description,
+            CONVERT(sc.status USING utf8mb4) COLLATE utf8mb4_unicode_ci AS status,
+            sc.date_submitted,
+            CONVERT(sc.file_upload USING utf8mb4) COLLATE utf8mb4_unicode_ci AS file_upload
+     FROM staff_complaint sc
+     LEFT JOIN staff st ON st.staff_id = sc.staff_id
+     WHERE sc.assigned_to = 'HOD' AND sc.department_no = ?
+     ORDER BY date_submitted DESC, complaint_id DESC"
 );
+if($recent_stmt){
+    $hod_department_no = (int) $department_no;
+    mysqli_stmt_bind_param($recent_stmt, 'ii', $hod_department_no, $hod_department_no);
+    mysqli_stmt_execute($recent_stmt);
+    $recent_complaints = mysqli_stmt_get_result($recent_stmt);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -157,6 +186,10 @@ vertical-align:top;
 .actions form{display:grid;gap:8px;min-width:220px;}
 .actions textarea,.actions select,.actions button{width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;}
 .actions button{border:none;background:#5b2c6f;color:#fff;cursor:pointer;}
+.complaint-image{display:flex;align-items:center;gap:10px;min-width:140px;}
+.complaint-image img{width:90px;height:68px;object-fit:cover;border-radius:8px;border:1px solid #d1d5db;background:#f8fafc;}
+.complaint-image a{color:#5b2c6f;font-weight:700;text-decoration:none;}
+.muted{color:#6b7280;font-size:13px;}
 
 .status{
 display:inline-block;
@@ -246,33 +279,57 @@ padding:20px;
 <table>
 <tr>
 <th>ID</th>
-<th>Student</th>
+<th>Source</th>
+<th>Submitted By</th>
+<th>Department</th>
 <th>Category</th>
 <th>Description</th>
-<th>Date</th>
 <th>Status</th>
+<th>Date Submitted</th>
+<th>Uploaded Image</th>
 <th>Action</th>
 </tr>
 
 <?php if($recent_complaints && mysqli_num_rows($recent_complaints) > 0) { ?>
 <?php while($row = mysqli_fetch_assoc($recent_complaints)) { ?>
+<?php
+$file_name = basename((string) ($row['file_upload'] ?? ''));
+$file_path = $file_name !== '' ? '../uploads/' . rawurlencode($file_name) : '';
+$server_file_path = $file_name !== '' ? __DIR__ . '/../uploads/' . $file_name : '';
+$file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+$is_image = $file_name !== '' && is_file($server_file_path) && in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'jfif'], true);
+?>
 <tr>
 <td><?php echo htmlspecialchars($row['complaint_id']); ?></td>
-<td><?php echo htmlspecialchars($row['register_no']); ?></td>
+<td><?php echo htmlspecialchars((string) $row['source_label']); ?></td>
+<td><?php echo htmlspecialchars((string) $row['submitted_by']); ?><?php if(!empty($row['submitter_name'])) { ?><br><span class="muted"><?php echo htmlspecialchars((string) $row['submitter_name']); ?></span><?php } ?></td>
+<td><?php echo htmlspecialchars(department_name((int) $row['department_no'])); ?></td>
 <td><?php echo htmlspecialchars(category_name((int) $row['category_id'])); ?></td>
 <td><?php echo htmlspecialchars($row['description']); ?></td>
-<td><?php echo htmlspecialchars($row['date_submitted']); ?></td>
 <td>
 <span class="status <?php echo status_class($row['status']); ?>">
 <?php echo htmlspecialchars($row['status']); ?>
 </span>
 </td>
+<td><?php echo htmlspecialchars($row['date_submitted']); ?></td>
+<td>
+<?php if($is_image) { ?>
+<div class="complaint-image">
+<a href="<?php echo htmlspecialchars($file_path); ?>" target="_blank">
+<img src="<?php echo htmlspecialchars($file_path); ?>" alt="Complaint image">
+</a>
+</div>
+<?php } else { ?>
+<span class="muted">No image</span>
+<?php } ?>
+</td>
 <td class="actions">
 <form method="post">
+<input type="hidden" name="source_type" value="<?php echo htmlspecialchars((string) $row['source_type']); ?>">
 <input type="hidden" name="complaint_id" value="<?php echo htmlspecialchars((string) $row['complaint_id']); ?>">
 <textarea name="remarks" placeholder="Remarks"></textarea>
-<button type="submit" name="action_type" value="progress">In Progress</button>
 <button type="submit" name="action_type" value="resolve">Resolve</button>
+<button type="submit" name="action_type" value="progress">In Progress</button>
 
 </form>
 </td>
@@ -280,7 +337,7 @@ padding:20px;
 <?php } ?>
 <?php } else { ?>
 <tr>
-<td colspan="7">No complaints found for this department.</td>
+<td colspan="10">No complaints found for this department.</td>
 </tr>
 <?php } ?>
 </table>

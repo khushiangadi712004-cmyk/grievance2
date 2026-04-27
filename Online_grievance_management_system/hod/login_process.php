@@ -38,10 +38,12 @@ if(!password_verify($mypswd, $hod['password']) && $mypswd !== $hod['password']){
     redirect_with_error('Wrong password.');
 }
 
+session_regenerate_id(true);
 $_SESSION['hod_id'] = $hod['hod_id'];
 $_SESSION['hod_name'] = $hod['hod_name'];
 $_SESSION['hod_email'] = $hod['email'];
 $_SESSION['hod_department_no'] = $hod['department_no'];
+$_SESSION['role'] = 'HOD';
 
 header('Location: dashboard_hod.php');
 exit();

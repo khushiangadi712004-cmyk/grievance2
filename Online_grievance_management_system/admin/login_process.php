@@ -38,9 +38,11 @@ if(!password_verify($mypswd, $admin['mypswd'])){
     redirect_with_error('Wrong password.');
 }
 
+session_regenerate_id(true);
 $_SESSION['admin_id'] = $admin['admin_id'];
 $_SESSION['admin_name'] = $admin['admin_name'];
 $_SESSION['admin_email'] = $admin['email'];
+$_SESSION['role'] = 'Admin';
 
 header('Location: dashboard_admin.php');
 exit();

@@ -66,6 +66,53 @@ if (!function_exists('status_class')) {
     }
 }
 
+if (!function_exists('save_uploaded_complaint_file')) {
+    function save_uploaded_complaint_file($fileInputName, &$errorMessage = '')
+    {
+        $errorMessage = '';
+
+        if (!isset($_FILES[$fileInputName]) || empty($_FILES[$fileInputName]['name'])) {
+            return '';
+        }
+
+        if ($_FILES[$fileInputName]['error'] !== UPLOAD_ERR_OK) {
+            $errorMessage = 'Unable to upload file. Please choose the file again.';
+            return false;
+        }
+
+        $originalName = basename($_FILES[$fileInputName]['name']);
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $allowedExtensions = ['jpg', 'jpeg', 'png'];
+
+        if (!in_array($extension, $allowedExtensions, true)) {
+            $errorMessage = 'Only JPG, JPEG, and PNG files are allowed.';
+            return false;
+        }
+
+        $uploadsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads';
+        if (!is_dir($uploadsDir) && !mkdir($uploadsDir, 0775, true)) {
+            $errorMessage = 'Unable to create uploads folder.';
+            return false;
+        }
+
+        $safeBaseName = preg_replace('/[^a-zA-Z0-9._-]/', '_', pathinfo($originalName, PATHINFO_FILENAME));
+        $safeBaseName = trim($safeBaseName, '._-');
+        if ($safeBaseName === '') {
+            $safeBaseName = 'complaint_file';
+        }
+
+        $storedName = date('YmdHis') . '_' . bin2hex(random_bytes(4)) . '_' . $safeBaseName . '.' . $extension;
+        $targetPath = $uploadsDir . DIRECTORY_SEPARATOR . $storedName;
+
+        if (!move_uploaded_file($_FILES[$fileInputName]['tmp_name'], $targetPath)) {
+            $errorMessage = 'Unable to save uploaded file.';
+            return false;
+        }
+
+        return $storedName;
+    }
+}
+
 if (!function_exists('column_exists')) {
     function column_exists($conn, $tableName, $columnName)
     {

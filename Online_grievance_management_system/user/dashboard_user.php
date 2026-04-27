@@ -6,7 +6,7 @@ include '../include/complaint_helpers.php';
 
 /* ✅ Check if user is logged in */
 if(!isset($_SESSION['register_no'])){
-    header("Location: login.php"); // redirect to login
+    header("Location: student_login.php");
     exit();
 }
 

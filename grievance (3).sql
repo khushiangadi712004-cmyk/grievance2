@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `complaint` (
   `category_id` int NOT NULL,
   `department_no` int NOT NULL,
   `description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `file_upload` blob NOT NULL,
+  `file_upload` varchar(255) DEFAULT NULL,
   `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `remarks` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `date_submitted` datetime NOT NULL,

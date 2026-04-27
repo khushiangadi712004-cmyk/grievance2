@@ -1,5 +1,13 @@
 <?php
+session_start();
+
+if(isset($_SESSION['staff_id'])){
+    header('Location: dashboard_staff.php');
+    exit();
+}
+
 $error = $_GET['error'] ?? '';
+$success = $_GET['success'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,6 +29,14 @@ background:#ffe2e2;
 color:#b42318;
 font-size:14px;
 }
+.success-message{
+margin-bottom:15px;
+padding:12px;
+border-radius:6px;
+background:#e7f8ed;
+color:#176b3a;
+font-size:14px;
+}
 </style>
 </head>
 
@@ -39,6 +55,9 @@ font-size:14px;
 
 <?php if($error !== '') { ?>
 <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
+<?php } ?>
+<?php if($success !== '') { ?>
+<div class="success-message"><?php echo htmlspecialchars($success); ?></div>
 <?php } ?>
 
 <form action="login_process.php" method="post" onsubmit="return validateCaptcha()">
@@ -63,7 +82,7 @@ font-size:14px;
 <input type="text" id="captchaInput" placeholder="Enter captcha" required>
 
 <div class="options">
-<a href="#">Forgot password?</a>
+<a href="forgot_password.php">Forgot password?</a>
 </div>
 
 <button class="login-btn" type="submit">Sign In as Staff</button>
@@ -72,9 +91,7 @@ font-size:14px;
 Staff accounts are managed by the administrator.
 </div>
 
-<div class="support">
-If the staff table is missing, import <strong>staff/staff_setup.sql</strong> into the grievance database.
-</div>
+
 </form>
 
 </div>

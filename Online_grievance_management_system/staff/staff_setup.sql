@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS staff (
     email VARCHAR(30) NULL,
     password VARCHAR(60) NULL,
     created_at DATETIME NULL,
-    phone_no INT NULL,
+    phone_no VARCHAR(15) NULL,
     design VARCHAR(15) NULL
 );
 
