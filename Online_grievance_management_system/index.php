@@ -10,54 +10,54 @@ $roles = [
     'login_label' => 'Student Login',
     'path' => '/user/student_login.php',
     'icon' => 'fa-user-graduate',
-    'button_class' => 'primary',
-    'color' => '#0f6c8d',
-    'color_dark' => '#0f3d56',
+    'description' => 'Submit grievances, upload details, and track complaint progress online.',
+    'color' => '#1d4ed8',
+    'color_light' => '#dbeafe',
   ],
   'staff' => [
     'label' => 'Staff',
     'login_label' => 'Staff Login',
     'path' => '/staff/staff_login.php',
     'icon' => 'fa-users',
-    'button_class' => 'secondary',
-    'color' => '#1d4f91',
-    'color_dark' => '#1d3557',
+    'description' => 'Review assigned complaints and support faster departmental resolution.',
+    'color' => '#0e7490',
+    'color_light' => '#cffafe',
   ],
   'hod' => [
     'label' => 'HOD',
     'login_label' => 'HOD Login',
     'path' => '/hod/hod_login.php',
     'icon' => 'fa-building-columns',
-    'button_class' => 'secondary',
-    'color' => '#8e44ad',
-    'color_dark' => '#5b2c6f',
+    'description' => 'Monitor department-level grievances and take required action quickly.',
+    'color' => '#7c3aed',
+    'color_light' => '#ede9fe',
   ],
   'principal' => [
     'label' => 'Principal',
     'login_label' => 'Principal Login',
     'path' => '/principal/principal_login.php',
     'icon' => 'fa-user-tie',
-    'button_class' => 'secondary',
+    'description' => 'View escalated complaints and guide important institutional decisions.',
     'color' => '#b45309',
-    'color_dark' => '#7c2d12',
+    'color_light' => '#fef3c7',
   ],
   'management' => [
     'label' => 'Management',
     'login_label' => 'Management Login',
     'path' => '/view/management_login.php',
     'icon' => 'fa-briefcase',
-    'button_class' => 'secondary',
-    'color' => '#15803d',
-    'color_dark' => '#14532d',
+    'description' => 'Track overall complaint flow and improve campus service quality.',
+    'color' => '#047857',
+    'color_light' => '#d1fae5',
   ],
   'admin' => [
     'label' => 'Admin',
     'login_label' => 'Admin Login',
     'path' => '/admin/admin_login.php',
     'icon' => 'fa-user-shield',
-    'button_class' => 'dark-btn',
-    'color' => '#4b1d95',
-    'color_dark' => '#1d4f91',
+    'description' => 'Manage users, records, complaints, and complete portal monitoring.',
+    'color' => '#1e3a8a',
+    'color_light' => '#e0e7ff',
   ],
 ];
 
@@ -70,398 +70,672 @@ function role_url($basePath, $role) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GrievanceDesk | Online Grievance Management System</title>
+<title>Online Grievance Management System</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-:root{
-  --bg:#eef4fb;
-  --surface:#ffffff;
-  --surface-soft:#f8fafc;
-  --text:#102033;
-  --muted:#5e7188;
-  --primary:#2563eb;
-  --primary-dark:#1e3a8a;
-  --accent:#06b6d4;
-  --purple:#7c3aed;
-  --teal:#0891b2;
-  --border:#dbe5ee;
-  --shadow:0 18px 45px rgba(16,32,51,0.12);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-body.dark{
-  --bg:#0d1624;
-  --surface:#121e2e;
-  --surface-soft:#172538;
-  --text:#edf6ff;
-  --muted:#aab8c8;
-  --primary:#60a5fa;
-  --primary-dark:#1d4ed8;
-  --accent:#2dd4bf;
-  --purple:#a78bfa;
-  --teal:#22d3ee;
-  --border:#27384d;
-  --shadow:0 18px 45px rgba(0,0,0,0.35);
+:root {
+  --text: #111827;
+  --muted: #64748b;
+  --white: #ffffff;
+  --soft: #f8fafc;
+  --line: #e2e8f0;
+  --border: rgba(15, 23, 42, 0.09);
+  --shadow: 0 22px 55px rgba(15, 23, 42, 0.13);
+  --navy: #0f172a;
+  --blue: #1d4ed8;
+  --cyan: #0e7490;
+  --teal: #047857;
+  --gold: #b45309;
 }
 
-*{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{
-  font-family:Arial, sans-serif;
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background: #eef4fb;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page-bg {
+  min-height: 100vh;
   background:
-    linear-gradient(135deg,rgba(37,99,235,0.12),rgba(6,182,212,0.10) 38%,rgba(124,58,237,0.08)),
-    var(--bg);
-  color:var(--text);
-  min-height:100vh;
-}
-body.dark{background:linear-gradient(135deg,#08111e 0%,#101c2c 52%,#15112d 100%);}
-a{text-decoration:none;color:inherit;}
-
-.nav{
-  position:sticky;
-  top:0;
-  z-index:10;
-  background:rgba(255,255,255,0.86);
-  border-bottom:1px solid var(--border);
-  backdrop-filter:blur(14px);
-}
-body.dark .nav{background:rgba(18,30,46,0.86);}
-.nav-inner{
-  max-width:1180px;
-  margin:auto;
-  padding:16px 22px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;}
-.brand i{
-  color:white;
-  background:linear-gradient(135deg,var(--primary),var(--purple));
-  width:34px;
-  height:34px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:10px;
-}
-.nav-links{display:flex;align-items:center;gap:18px;color:var(--muted);font-weight:700;font-size:14px;}
-.nav-links a:hover{color:var(--primary);}
-.theme-toggle{
-  border:1px solid var(--border);
-  background:var(--surface);
-  color:var(--text);
-  padding:10px 12px;
-  border-radius:999px;
-  cursor:pointer;
-  box-shadow:0 8px 18px rgba(0,0,0,0.06);
+    linear-gradient(135deg, rgba(15,23,42,0.93) 0%, rgba(30,58,138,0.84) 42%, rgba(14,116,144,0.78) 100%),
+    url('https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1800&q=80');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  padding-bottom: 54px;
+  position: relative;
+  overflow: hidden;
 }
 
-.hero{
-  max-width:1180px;
-  margin:auto;
-  padding:64px 22px 34px;
-  display:grid;
-  grid-template-columns:1.1fr 0.9fr;
-  gap:34px;
-  align-items:center;
-}
-.hero-shell{
+.page-bg:before {
+  content: "";
+  position: absolute;
+  inset: 0;
   background:
-    radial-gradient(circle at 12% 20%, rgba(255,255,255,0.20), transparent 28%),
-    linear-gradient(135deg,#0f3d91 0%,#2563eb 42%,#06b6d4 100%);
-  color:white;
-  border-radius:28px;
-  box-shadow:0 28px 70px rgba(37,99,235,0.24);
-  margin:26px auto 0;
-  max-width:1228px;
-  overflow:hidden;
+    radial-gradient(circle at 16% 12%, rgba(255,255,255,0.16), transparent 28%),
+    radial-gradient(circle at 86% 18%, rgba(20,184,166,0.18), transparent 30%),
+    linear-gradient(180deg, rgba(15,23,42,0.08), rgba(15,23,42,0.42));
+  pointer-events: none;
 }
-.hero-shell .hero{padding:64px 24px;}
-.hero-shell .hero h1,
-.hero-shell .hero p{color:white;}
-.hero-shell .hero p{color:rgba(255,255,255,0.86);}
-.hero-shell .eyebrow{
-  color:white;
-  background:rgba(255,255,255,0.16);
-  border-color:rgba(255,255,255,0.25);
-}
-.eyebrow{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  color:var(--primary);
-  background:linear-gradient(135deg,rgba(37,99,235,0.12),rgba(20,184,166,0.12));
-  border:1px solid rgba(37,99,235,0.18);
-  padding:8px 12px;
-  border-radius:999px;
-  font-size:13px;
-  font-weight:800;
-  margin-bottom:18px;
-}
-.hero h1{
-  font-size:54px;
-  line-height:1.06;
-  letter-spacing:0;
-  color:var(--text);
-  margin-bottom:18px;
-}
-.hero h1 span{
-  display:block;
-  color:#dff8ff;
-  font-size:0.62em;
-  margin-bottom:8px;
-}
-.hero p{color:var(--muted);font-size:18px;line-height:1.7;max-width:660px;}
-.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0;}
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:9px;
-  border-radius:10px;
-  padding:13px 18px;
-  font-weight:800;
-  border:1px solid transparent;
-  cursor:pointer;
-  transition:0.22s ease;
-}
-.btn.primary{background:linear-gradient(135deg,var(--primary),var(--teal));color:white;box-shadow:0 12px 24px rgba(37,99,235,0.28);}
-.btn.secondary{background:var(--surface);color:var(--primary);border-color:var(--border);}
-.btn.dark-btn{background:linear-gradient(135deg,#172033,var(--purple));color:white;}
-.btn:hover{transform:translateY(-2px);}
 
-.hero-panel{
-  background:rgba(255,255,255,0.94);
-  border:1px solid rgba(255,255,255,0.45);
-  border-radius:18px;
-  box-shadow:var(--shadow);
-  overflow:hidden;
+.navbar,
+.hero,
+.content,
+.footer {
+  position: relative;
+  z-index: 1;
 }
-body.dark .hero-panel{background:rgba(18,30,46,0.94);}
-.panel-head{
-  background:linear-gradient(135deg,var(--primary-dark),var(--primary),var(--accent));
-  color:white;
-  padding:22px;
-}
-.panel-head h2{font-size:22px;margin-bottom:8px;}
-.panel-head p{color:rgba(255,255,255,0.86);font-size:14px;line-height:1.5;}
-.role-grid{padding:18px;display:grid;gap:12px;}
-.role-link{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:14px;
-  border:1px solid var(--border);
-  border-radius:12px;
-  background:var(--surface-soft);
-  transition:0.22s ease;
-  position:relative;
-  overflow:hidden;
-}
-.role-link::before{
-  content:'';
-  position:absolute;
-  left:0;
-  top:0;
-  bottom:0;
-  width:6px;
-  background:linear-gradient(180deg,var(--role-dark),var(--role-color));
-}
-.role-link span{display:flex;align-items:center;gap:10px;font-weight:800;}
-.role-link span i{
-  color:white;
-  width:34px;
-  height:34px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:10px;
-  background:linear-gradient(135deg,var(--role-dark),var(--role-color));
-}
-.role-link > i{color:var(--role-color);}
-.role-link:hover{border-color:var(--role-color);transform:translateX(4px);background:var(--surface);box-shadow:0 12px 24px rgba(16,32,51,0.10);}
 
-.section{max-width:1180px;margin:auto;padding:42px 22px;}
-.section-title{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:22px;}
-.section-title h2{font-size:32px;color:var(--text);}
-.section-title p{color:var(--muted);max-width:560px;line-height:1.6;}
-.features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
-.card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:22px;
-  box-shadow:0 12px 30px rgba(16,32,51,0.08);
-  transition:0.22s ease;
-  position:relative;
-  overflow:hidden;
+.navbar {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
 }
-.card::before{
-  content:'';
-  position:absolute;
-  inset:0 0 auto 0;
-  height:5px;
-  background:linear-gradient(90deg,var(--primary),var(--accent),var(--purple));
-}
-.card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
-.card i{
-  font-size:24px;
-  color:white;
-  width:48px;
-  height:48px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:14px;
-  background:linear-gradient(135deg,var(--primary),var(--purple));
-  margin-bottom:14px;
-}
-.card:nth-child(2) i,.card:nth-child(5) i{background:linear-gradient(135deg,var(--teal),var(--primary));}
-.card:nth-child(3) i,.card:nth-child(6) i{background:linear-gradient(135deg,var(--purple),#ec4899);}
-.card h3{font-size:18px;margin-bottom:9px;}
-.card p{color:var(--muted);line-height:1.6;font-size:14px;}
 
-.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
-.step{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:0 10px 24px rgba(16,32,51,0.07);}
-.step strong{display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;margin-bottom:14px;}
-.step h3{font-size:17px;margin-bottom:8px;}
-.step p{color:var(--muted);font-size:14px;line-height:1.55;}
+.navbar:after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 74px;
+  height: 1px;
+  background: rgba(255,255,255,0.14);
+  pointer-events: none;
+}
 
-.footer{
-  margin-top:34px;
-  background:linear-gradient(135deg,var(--primary-dark),#312e81);
-  color:white;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--white);
+  font-size: 19px;
+  font-weight: 800;
 }
-.footer-inner{
-  max-width:1180px;
-  margin:auto;
-  padding:26px 22px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-  flex-wrap:wrap;
-}
-.footer a{color:rgba(255,255,255,0.82);margin-left:16px;font-weight:700;font-size:14px;}
-.footer a:hover{color:white;}
 
-@media(max-width:900px){
-  .hero{grid-template-columns:1fr;padding-top:42px;}
-  .hero h1{font-size:40px;}
-  .features{grid-template-columns:repeat(2,1fr);}
-  .steps{grid-template-columns:repeat(2,1fr);}
+.brand-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.28);
 }
-@media(max-width:640px){
-  .nav-inner{align-items:flex-start;flex-direction:column;}
-  .nav-links{width:100%;overflow:auto;padding-bottom:4px;}
-  .hero h1{font-size:32px;}
-  .hero-actions{flex-direction:column;}
-  .btn{width:100%;}
-  .features,.steps{grid-template-columns:1fr;}
-  .section-title{display:block;}
-  .section-title p{margin-top:8px;}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  color: rgba(255,255,255,0.90);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 13px;
+  border-radius: 999px;
+  transition: 0.2s ease;
+}
+
+.nav-links a:hover {
+  background: rgba(255,255,255,0.16);
+  color: #ffffff;
+}
+
+.hero {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 58px 20px 44px;
+  display: block;
+  text-align: center;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  background: rgba(255,255,255,0.16);
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: 999px;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 22px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+}
+
+.hero h1 {
+  color: #ffffff;
+  font-size: 60px;
+  line-height: 1.04;
+  letter-spacing: 0;
+  margin: 0 auto 20px;
+  max-width: 760px;
+  text-shadow: 0 12px 30px rgba(15,23,42,0.32);
+}
+
+.hero p {
+  max-width: 680px;
+  color: rgba(255,255,255,0.88);
+  font-size: 18px;
+  line-height: 1.75;
+  margin-bottom: 30px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #123c8c;
+  background: #ffffff;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-weight: 800;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  transition: 0.22s ease;
+}
+
+.hero-btn.alt {
+  color: #ffffff;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: none;
+}
+
+.hero-btn:hover {
+  transform: translateY(-3px);
+}
+
+.hero-panel {
+  background: linear-gradient(135deg, rgba(15,23,42,0.18), rgba(255,255,255,0.18));
+  border: 1px solid rgba(255,255,255,0.34);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.18);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(18px);
+}
+
+.workflow-section {
+  margin-top: 28px;
+  background: rgba(15, 23, 42, 0.18);
+}
+
+.hero-panel:before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan), var(--teal), var(--gold));
+}
+
+.hero-panel h2 {
+  font-size: 25px;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.stat {
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(255,255,255,0.64);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.10);
+}
+
+.stat i {
+  color: var(--blue);
+  font-size: 23px;
+  margin-bottom: 12px;
+}
+
+.stat strong {
+  display: block;
+  font-size: 25px;
+  margin-bottom: 4px;
+}
+
+.stat span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.content {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section {
+  background: rgba(15, 23, 42, 0.24);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.24);
+  padding: 36px;
+  margin-bottom: 28px;
+  backdrop-filter: blur(16px);
+}
+
+.section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.28);
+}
+
+.section-head h2 {
+  font-size: 31px;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.section-head p {
+  color: rgba(255,255,255,0.82);
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.module-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+  background:
+    linear-gradient(180deg, var(--card-light), rgba(255,255,255,0.92) 46%, rgba(255,255,255,0.96));
+  border: 1px solid rgba(255,255,255,0.58);
+  border-radius: 16px;
+  padding: 26px;
+  transition: 0.22s ease;
+}
+
+.module-card:before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 5px;
+  background: var(--card-color);
+}
+
+.module-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
+  border-color: color-mix(in srgb, var(--card-color) 32%, #e5e7eb);
+}
+
+.module-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-color);
+  color: #ffffff;
+  font-size: 25px;
+  margin-bottom: 18px;
+}
+
+.module-card h3 {
+  font-size: 21px;
+  margin-bottom: 10px;
+  color: var(--navy);
+}
+
+.module-card p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 76px;
+  margin-bottom: 18px;
+}
+
+.login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: #ffffff;
+  background: var(--card-color);
+  border-radius: 9px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 800;
+  transition: 0.22s ease;
+}
+
+.login-btn:hover {
+  filter: brightness(0.94);
+  transform: translateX(3px);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.feature {
+  background: rgba(255,255,255,0.90);
+  border: 1px solid rgba(255,255,255,0.62);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  transition: 0.2s ease;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.10);
+}
+
+.feature:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.09);
+}
+
+.feature i {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  border-radius: 13px;
+  font-size: 21px;
+  margin-bottom: 14px;
+}
+
+.feature:nth-child(2) i {
+  background: linear-gradient(135deg, var(--cyan), var(--teal));
+}
+
+.feature:nth-child(3) i {
+  background: linear-gradient(135deg, var(--navy), #334155);
+}
+
+.feature:nth-child(4) i {
+  background: linear-gradient(135deg, var(--gold), #d97706);
+}
+
+.feature:nth-child(5) i {
+  background: linear-gradient(135deg, var(--teal), #065f46);
+}
+
+.feature h3 {
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--navy);
+}
+
+.footer {
+  color: rgba(255,255,255,0.88);
+  text-align: center;
+  padding: 30px 20px 0;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.footer strong {
+  color: #ffffff;
+}
+
+@media (max-width: 960px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding-top: 26px;
+  }
+
+  .hero h1 {
+    font-size: 42px;
+  }
+
+  .module-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nav-links {
+    width: 100%;
+  }
+
+  .hero h1 {
+    font-size: 34px;
+  }
+
+  .hero p {
+    font-size: 17px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .hero-btn {
+    width: 100%;
+  }
+
+  .stats,
+  .module-grid,
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 24px 18px;
+    border-radius: 18px;
+  }
+
+  .section-head {
+    display: block;
+  }
+
+  .section-head h2 {
+    font-size: 27px;
+  }
+
+  .module-card p {
+    min-height: auto;
+  }
 }
 </style>
+<link rel="stylesheet" href="assets/css/theme.css">
 </head>
 <body>
 
-<nav class="nav">
-  <div class="nav-inner">
-    <a class="brand" href="#home"><i class="fa-solid fa-shield-halved"></i> GrievanceDesk</a>
-    <div class="nav-links">
+<div class="page-bg">
+  <header class="navbar">
+    <a class="brand" href="index.php">
+      <span class="brand-icon"><i class="fa-solid fa-shield-halved"></i></span>
+      <span>College Grievance Portal</span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="#modules">Modules</a>
       <a href="#features">Features</a>
-      <a href="#how">How It Works</a>
-      <?php foreach (['student', 'staff'] as $roleKey) { ?>
-      <a href="<?php echo role_url($basePath, $roles[$roleKey]); ?>"><?php echo htmlspecialchars($roles[$roleKey]['label']); ?></a>
-      <?php } ?>
-      <button class="theme-toggle" id="themeToggle" type="button"><i class="fa-solid fa-moon"></i></button>
-    </div>
-  </div>
-</nav>
+      <a href="<?php echo role_url($basePath, $roles['student']); ?>">Student Login</a>
+      <a href="<?php echo role_url($basePath, $roles['admin']); ?>">Admin Login</a>
+    </nav>
+  </header>
 
-<main id="home">
-<div class="hero-shell">
-  <section class="hero">
-    <div>
-      <div class="eyebrow"><i class="fa-solid fa-building-shield"></i> Institutional complaint resolution portal</div>
-      <h1><span>GrievanceDesk</span>Online Grievance Management System</h1>
-      <p>A transparent platform for submitting, tracking, and resolving grievances efficiently.</p>
-      <div class="hero-actions">
-        <?php foreach (['student', 'staff', 'admin'] as $roleKey) { ?>
-        <a class="btn <?php echo htmlspecialchars($roles[$roleKey]['button_class']); ?>" href="<?php echo role_url($basePath, $roles[$roleKey]); ?>"><i class="fa-solid <?php echo htmlspecialchars($roles[$roleKey]['icon']); ?>"></i> <?php echo htmlspecialchars($roles[$roleKey]['login_label']); ?></a>
-        <?php } ?>
-      </div>
-    </div>
+  <main>
+    <section class="hero">
+      <div>
+        <div class="hero-badge">
+          <i class="fa-solid fa-building-shield"></i>
+          Digital Grievance Redressal Portal
+        </div>
 
-    <aside class="hero-panel">
-      <div class="panel-head">
-        <h2>Access Your Portal</h2>
-        <p>Choose your role to continue with complaint submission, review, escalation, and resolution.</p>
+        <h1>Online Grievance Management System</h1>
+        <p>
+          Submit, track, and resolve complaints digitally through a transparent,
+          role-based platform designed for students, staff, and college authorities.
+        </p>
+
+        <div class="hero-actions">
+          <a class="hero-btn alt" href="#modules">
+            <i class="fa-solid fa-table-cells-large"></i>
+            View All Modules
+          </a>
+        </div>
       </div>
-      <div class="role-grid">
-        <?php foreach ($roles as $role) { ?>
-        <a class="role-link" style="--role-color:<?php echo htmlspecialchars($role['color']); ?>;--role-dark:<?php echo htmlspecialchars($role['color_dark']); ?>;" href="<?php echo role_url($basePath, $role); ?>"><span><i class="fa-solid <?php echo htmlspecialchars($role['icon']); ?>"></i> <?php echo htmlspecialchars($role['login_label']); ?></span><i class="fa-solid fa-arrow-right"></i></a>
-        <?php } ?>
-      </div>
-    </aside>
-  </section>
+    </section>
+
+    <div class="content">
+      <section class="section" id="modules">
+        <div class="section-head">
+          <div>
+            <h2>Login Modules</h2>
+            <p>Select your role and continue to the dedicated login area.</p>
+          </div>
+        </div>
+
+        <div class="module-grid">
+          <?php foreach ($roles as $role) { ?>
+            <div class="module-card" style="--card-color: <?php echo htmlspecialchars($role['color']); ?>; --card-light: <?php echo htmlspecialchars($role['color_light']); ?>;">
+              <span class="module-icon">
+                <i class="fa-solid <?php echo htmlspecialchars($role['icon']); ?>"></i>
+              </span>
+              <h3><?php echo htmlspecialchars($role['label']); ?></h3>
+              <p><?php echo htmlspecialchars($role['description']); ?></p>
+              <a class="login-btn" href="<?php echo role_url($basePath, $role); ?>">
+                <?php echo htmlspecialchars($role['login_label']); ?>
+                <i class="fa-solid fa-arrow-right"></i>
+              </a>
+            </div>
+          <?php } ?>
+        </div>
+      </section>
+
+      <section class="section" id="features">
+        <div class="section-head">
+          <div>
+            <h2>Portal Features</h2>
+            <p>Designed to make complaint handling simple, transparent, and faster.</p>
+          </div>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <h3>Online Complaint Submission</h3>
+          </div>
+          <div class="feature">
+            <i class="fa-solid fa-magnifying-glass-chart"></i>
+            <h3>Status Tracking</h3>
+          </div>
+          <div class="feature">
+            <i class="fa-solid fa-user-lock"></i>
+            <h3>Role-Based Access</h3>
+          </div>
+          <div class="feature">
+            <i class="fa-solid fa-clock"></i>
+            <h3>Faster Resolution</h3>
+          </div>
+          <div class="feature">
+            <i class="fa-solid fa-database"></i>
+            <h3>Secure Complaint Records</h3>
+          </div>
+        </div>
+      </section>
+
+      <section class="section workflow-section">
+        <aside class="hero-panel">
+          <h2>Smart Complaint Workflow</h2>
+          <p style="color: rgba(255,255,255,0.82); line-height: 1.6;">
+            A professional system for registering complaints, assigning them to the
+            right authority, tracking progress, and keeping records secure.
+          </p>
+
+          <div class="stats">
+            <div class="stat">
+              <i class="fa-solid fa-file-circle-plus"></i>
+              <strong>24x7</strong>
+              <span>Online complaint submission</span>
+            </div>
+            <div class="stat">
+              <i class="fa-solid fa-chart-line"></i>
+              <strong>Live</strong>
+              <span>Status tracking and updates</span>
+            </div>
+            <div class="stat">
+              <i class="fa-solid fa-users-gear"></i>
+              <strong>6</strong>
+              <span>Role-based login modules</span>
+            </div>
+            <div class="stat">
+              <i class="fa-solid fa-lock"></i>
+              <strong>Safe</strong>
+              <span>Organized complaint records</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <strong>Online Grievance Management System</strong><br>
+    BCA Final Year Project | College Grievance Portal | &copy; <?php echo date('Y'); ?>
+  </footer>
 </div>
 
-  <section class="section" id="features">
-    <div class="section-title">
-      <h2>Built For Organized Resolution</h2>
-      <p>A clean workflow that helps every complaint reach the right authority and stay visible until it is resolved.</p>
-    </div>
-    <div class="features">
-      <div class="card"><i class="fa-solid fa-pen-to-square"></i><h3>Submit Complaint Online</h3><p>Students and staff can submit complaints with descriptions and supported image uploads.</p></div>
-      <div class="card"><i class="fa-solid fa-chart-line"></i><h3>Track Complaint Status</h3><p>Users can monitor pending, in progress, and resolved complaints from their dashboard.</p></div>
-      <div class="card"><i class="fa-solid fa-route"></i><h3>Role-based Complaint Routing</h3><p>Complaints are routed by category and department to the responsible authority.</p></div>
-      <div class="card"><i class="fa-solid fa-lock"></i><h3>Secure Login System</h3><p>Separate login areas keep student, staff, admin, HOD, principal, and management access organized.</p></div>
-      <div class="card"><i class="fa-solid fa-clock"></i><h3>Faster Resolution</h3><p>Authorities can mark complaints in progress, add remarks, and resolve issues faster.</p></div>
-      <div class="card"><i class="fa-solid fa-desktop"></i><h3>Admin Monitoring</h3><p>Admin can monitor complaint activity, staff details, student data, and escalation flow.</p></div>
-    </div>
-  </section>
-
-  <section class="section" id="how">
-    <div class="section-title">
-      <h2>How It Works</h2>
-      <p>A simple process for submitting and resolving grievances with full accountability.</p>
-    </div>
-    <div class="steps">
-      <div class="step"><strong>1</strong><h3>Login/Register</h3><p>Students register or login, while staff and authorities use their assigned accounts.</p></div>
-      <div class="step"><strong>2</strong><h3>Submit Grievance</h3><p>Choose a category, describe the issue, and upload an image when required.</p></div>
-      <div class="step"><strong>3</strong><h3>Authority Reviews</h3><p>The complaint reaches HOD, Principal, or Management based on the category.</p></div>
-      <div class="step"><strong>4</strong><h3>Status Updated</h3><p>Status and remarks keep the complaint transparent until final resolution.</p></div>
-    </div>
-  </section>
-</main>
-
-<footer class="footer">
-  <div class="footer-inner">
-    <div><strong>Online Grievance Management System</strong><br><span>&copy; <?php echo date('Y'); ?> Transparent, fast, and organized complaint resolution.</span></div>
-    <div>
-      <?php foreach (['student', 'staff', 'admin'] as $roleKey) { ?>
-      <a href="<?php echo role_url($basePath, $roles[$roleKey]); ?>"><?php echo htmlspecialchars($roles[$roleKey]['login_label']); ?></a>
-      <?php } ?>
-    </div>
-  </div>
-</footer>
-
-<script>
-const themeToggle = document.getElementById('themeToggle');
-const savedTheme = localStorage.getItem('gms-theme');
-if (savedTheme === 'dark') {
-  document.body.classList.add('dark');
-  themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
-}
-themeToggle.addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  const isDark = document.body.classList.contains('dark');
-  localStorage.setItem('gms-theme', isDark ? 'dark' : 'light');
-  themeToggle.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
-});
-</script>
+<script src="assets/js/theme.js"></script>
 </body>
 </html>

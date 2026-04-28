@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 
 if(isset($_SESSION['admin_id'])){
@@ -29,6 +29,7 @@ color:#b42318;
 font-size:14px;
 }
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 
 <body>
@@ -76,16 +77,9 @@ font-size:14px;
 
 <button class="login-btn" type="submit">Sign In as Admin</button>
 
-<div class="register">
-Admin accounts are managed by the system administrator.
-</div>
-
-<div class="support">
-If the admin table is missing, import <strong>admin/admin_setup.sql</strong> into the grievance database.
-</div>
-
 </form>
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

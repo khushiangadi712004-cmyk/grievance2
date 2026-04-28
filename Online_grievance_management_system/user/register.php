@@ -137,8 +137,173 @@ text-decoration:none;
 font-weight:600;
 }
 
+/* Modern portal register theme */
+html{
+min-height:100%;
+}
+
+body{
+min-height:100vh;
+height:auto;
+padding:28px 16px;
+color:#111827;
+background:
+linear-gradient(135deg,rgba(15,23,42,0.93),rgba(30,58,138,0.84) 45%,rgba(14,116,144,0.78)),
+url('https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1800&q=80');
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
+}
+
+body:before{
+content:"";
+position:fixed;
+inset:0;
+background:
+radial-gradient(circle at 16% 12%,rgba(255,255,255,0.16),transparent 28%),
+radial-gradient(circle at 86% 18%,rgba(20,184,166,0.18),transparent 30%),
+linear-gradient(180deg,rgba(15,23,42,0.08),rgba(15,23,42,0.42));
+pointer-events:none;
+}
+
+.container{
+position:relative;
+z-index:1;
+width:min(460px,100%);
+background:rgba(255,255,255,0.94);
+border:1px solid rgba(255,255,255,0.58);
+border-radius:18px;
+padding:34px;
+box-shadow:0 24px 60px rgba(2,6,23,0.28);
+backdrop-filter:blur(16px);
+}
+
+.container:before{
+content:"";
+position:absolute;
+left:0;
+right:0;
+top:0;
+height:5px;
+border-radius:18px 18px 0 0;
+background:linear-gradient(90deg,#1d4ed8,#0e7490,#047857,#b45309);
+}
+
+h2{
+margin:0 0 6px;
+color:#0f172a;
+font-size:32px;
+line-height:1.1;
+}
+
+.subtitle{
+color:#64748b;
+line-height:1.5;
+margin-bottom:22px;
+}
+
+label{
+display:block;
+font-weight:700;
+font-size:14px;
+color:#1f2937;
+margin-bottom:7px;
+}
+
+input,
+select{
+width:100%;
+padding:13px 14px;
+margin:0 0 16px;
+border:1px solid #d7dee8;
+border-radius:10px;
+background:#f8fafc;
+color:#111827;
+font-size:15px;
+outline:none;
+transition:0.2s ease;
+}
+
+input:focus,
+select:focus{
+border-color:#1d4ed8;
+background:#ffffff;
+box-shadow:0 0 0 4px rgba(29,78,216,0.12);
+}
+
+.password-box input{
+padding-right:44px;
+}
+
+.eye{
+position:absolute;
+right:14px;
+top:50%;
+transform:translateY(-50%);
+color:#64748b;
+cursor:pointer;
+}
+
+.eye:hover{
+color:#1d4ed8;
+}
+
+.register-btn{
+width:100%;
+padding:13px;
+background:linear-gradient(135deg,#1d4ed8,#0e7490);
+border:none;
+color:white;
+font-size:16px;
+font-weight:800;
+border-radius:10px;
+cursor:pointer;
+box-shadow:0 12px 24px rgba(29,78,216,0.24);
+transition:0.2s ease;
+}
+
+.register-btn:hover{
+background:linear-gradient(135deg,#1e3a8a,#0e7490);
+transform:translateY(-2px);
+box-shadow:0 16px 30px rgba(29,78,216,0.30);
+}
+
+.bottom-text{
+text-align:center;
+margin-top:18px;
+font-size:14px;
+color:#64748b;
+}
+
+.bottom-text a{
+color:#1d4ed8;
+text-decoration:none;
+font-weight:800;
+}
+
+.bottom-text a:hover{
+color:#0e7490;
+}
+
+@media(max-width:520px){
+body{
+padding:18px 12px;
+align-items:flex-start;
+}
+
+.container{
+padding:28px 20px;
+border-radius:16px;
+}
+
+h2{
+font-size:29px;
+}
+}
+
 </style>
 
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 
 <body>
@@ -208,5 +373,6 @@ pass.type="password";
 
 </script>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

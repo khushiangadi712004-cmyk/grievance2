@@ -35,6 +35,7 @@ color:#b42318;
 font-size:14px;
 }
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 <div class="login-container">
@@ -74,5 +75,6 @@ New Student? <a href="register.php">Register here</a>
 </div>
 </form>
 </div>
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

@@ -91,6 +91,7 @@ function togglePassword(){
     }
 }
 </script>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 <div class="login-container">
@@ -126,5 +127,6 @@ function togglePassword(){
 <button class="login-btn" type="submit">Reset Staff Password</button>
 </form>
 </div>
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

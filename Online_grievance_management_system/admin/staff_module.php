@@ -168,6 +168,7 @@ button{padding:10px 14px;border:none;border-radius:8px;background:#1d4f91;color:
     .main{padding:20px;}
 }
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 
 <body>
@@ -283,5 +284,6 @@ $form_id = 'staff-form-' . preg_replace('/[^a-zA-Z0-9_-]/', '-', $row['role'] . 
 
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

@@ -18,6 +18,7 @@ $error = $_GET['error'] ?? '';
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/loginpage.js"></script>
 <style>.error-message{margin-bottom:15px;padding:12px;border-radius:6px;background:#ffe2e2;color:#b42318;font-size:14px;}</style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 <div class="login-container">
@@ -44,5 +45,6 @@ $error = $_GET['error'] ?? '';
 <button class="login-btn" type="submit">Sign In as Principal</button>
 </form>
 </div>
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

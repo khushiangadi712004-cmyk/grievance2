@@ -221,6 +221,7 @@ padding:20px;
 }
 }
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 
@@ -270,5 +271,6 @@ padding:20px;
 </div>
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

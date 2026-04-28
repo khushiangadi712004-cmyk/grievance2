@@ -69,6 +69,7 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 .resolved{background:#bbf7d0;color:#166534;}
 @media(max-width:768px){body{flex-direction:column;}.sidebar{width:100%;}.main{padding:20px;}}
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 <div class="sidebar">
@@ -117,5 +118,6 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 <?php } ?>
 </table>
 </div>
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

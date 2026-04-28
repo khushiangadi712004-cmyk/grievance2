@@ -161,6 +161,7 @@ border-radius:5px;
 
 </style>
 
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 
 <body>
@@ -199,5 +200,6 @@ border-radius:5px;
 
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

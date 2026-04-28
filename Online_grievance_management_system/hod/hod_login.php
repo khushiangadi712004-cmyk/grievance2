@@ -29,6 +29,7 @@ color:#b42318;
 font-size:14px;
 }
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 
 <body>
@@ -80,5 +81,6 @@ font-size:14px;
 </form>
 
 </div>
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

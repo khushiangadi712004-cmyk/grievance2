@@ -266,6 +266,7 @@ color:#b42318;
 
 </style>
 
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 
 <body>
@@ -367,5 +368,6 @@ color:#b42318;
 
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

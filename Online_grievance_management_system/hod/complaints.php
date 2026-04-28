@@ -12,8 +12,24 @@ $department_no = $_SESSION['hod_department_no'] ?? '';
 
 $complaints = mysqli_query(
     $conn,
-    "SELECT complaint_id, register_no, staff_id, category_id, description, file_upload, status, date_submitted
+    "SELECT complaint_id,
+            CONVERT(register_no USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitted_by,
+            category_id,
+            CONVERT(description USING utf8mb4) COLLATE utf8mb4_unicode_ci AS description,
+            CONVERT(file_upload USING utf8mb4) COLLATE utf8mb4_unicode_ci AS file_upload,
+            CONVERT(status USING utf8mb4) COLLATE utf8mb4_unicode_ci AS status,
+            date_submitted
      FROM complaint
+     WHERE department_no = '$department_no'
+     UNION ALL
+     SELECT complaint_id,
+            CONVERT(CAST(staff_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitted_by,
+            category_id,
+            CONVERT(description USING utf8mb4) COLLATE utf8mb4_unicode_ci AS description,
+            CONVERT(file_upload USING utf8mb4) COLLATE utf8mb4_unicode_ci AS file_upload,
+            CONVERT(status USING utf8mb4) COLLATE utf8mb4_unicode_ci AS status,
+            date_submitted
+     FROM staff_complaint
      WHERE department_no = '$department_no'
      ORDER BY complaint_id DESC"
 );
@@ -154,6 +170,7 @@ padding:20px;
 }
 }
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 
@@ -177,8 +194,7 @@ padding:20px;
 <table>
 <tr>
 <th>ID</th>
-<th>Student</th>
-<th>Assigned Staff</th>
+<th>Student / Staff</th>
 <th>Category</th>
 <th>Description</th>
 <th>Attachment</th>
@@ -190,8 +206,7 @@ padding:20px;
 <?php while($row = mysqli_fetch_assoc($complaints)) { ?>
 <tr>
 <td><?php echo htmlspecialchars((string) ($row['complaint_id'] ?? '')); ?></td>
-<td><?php echo htmlspecialchars((string) ($row['register_no'] ?? '')); ?></td>
-<td><?php echo htmlspecialchars((string) ($row['staff_id'] ?? 'Unassigned')); ?></td>
+<td><?php echo htmlspecialchars((string) ($row['submitted_by'] ?? '')); ?></td>
 <td><?php echo htmlspecialchars((string) ($row['category_id'] ?? '')); ?></td>
 <td><?php echo htmlspecialchars((string) ($row['description'] ?? '')); ?></td>
 <td>
@@ -219,12 +234,13 @@ if($row['status'] === 'Pending'){
 <?php } ?>
 <?php } else { ?>
 <tr>
-<td colspan="8">No complaints found for this department.</td>
+<td colspan="7">No complaints found for this department.</td>
 </tr>
 <?php } ?>
 </table>
 </div>
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

@@ -18,10 +18,20 @@ $total_staff = fetch_count($conn, "SELECT COUNT(*) FROM staff");
 
 $recent_complaints = mysqli_query(
     $conn,
-    "SELECT complaint_id, register_no, category_id, description, status
+    "SELECT complaint_id,
+            CONVERT(register_no USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitted_by,
+            category_id,
+            CONVERT(description USING utf8mb4) COLLATE utf8mb4_unicode_ci AS description,
+            CONVERT(status USING utf8mb4) COLLATE utf8mb4_unicode_ci AS status
      FROM complaint
-     ORDER BY complaint_id DESC
-     LIMIT 10"
+     UNION ALL
+     SELECT complaint_id,
+            CONVERT(CAST(staff_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitted_by,
+            category_id,
+            CONVERT(description USING utf8mb4) COLLATE utf8mb4_unicode_ci AS description,
+            CONVERT(status USING utf8mb4) COLLATE utf8mb4_unicode_ci AS status
+     FROM staff_complaint
+     ORDER BY complaint_id DESC"
 );
 ?>
 <!DOCTYPE html>
@@ -179,6 +189,7 @@ padding:20px;
 }
 }
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 
@@ -230,7 +241,7 @@ padding:20px;
 <table>
 <tr>
 <th>ID</th>
-<th>Register No</th>
+<th>Student / Staff</th>
 <th>Category</th>
 <th>Description</th>
 <th>Status</th>
@@ -240,7 +251,7 @@ padding:20px;
 <?php while($row = mysqli_fetch_assoc($recent_complaints)) { ?>
 <tr>
 <td><?php echo htmlspecialchars($row['complaint_id']); ?></td>
-<td><?php echo htmlspecialchars($row['register_no']); ?></td>
+<td><?php echo htmlspecialchars($row['submitted_by']); ?></td>
 <td><?php echo htmlspecialchars(category_name((int) $row['category_id'])); ?></td>
 <td><?php echo htmlspecialchars($row['description']); ?></td>
 <td>
@@ -258,5 +269,6 @@ padding:20px;
 </table>
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

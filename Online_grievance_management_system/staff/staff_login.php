@@ -38,6 +38,7 @@ color:#176b3a;
 font-size:14px;
 }
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 
 <body>
@@ -96,5 +97,6 @@ Staff accounts are managed by the administrator.
 
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

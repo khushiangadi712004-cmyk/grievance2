@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <title>Online Grievance Management System</title>
 <link rel="stylesheet" href="../css/style.css">
 
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 
 <body>
@@ -70,5 +71,6 @@
 
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

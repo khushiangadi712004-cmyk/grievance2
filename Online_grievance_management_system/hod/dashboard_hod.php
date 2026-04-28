@@ -228,6 +228,7 @@ padding:20px;
 }
 }
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 
@@ -343,5 +344,6 @@ $is_image = $file_name !== '' && is_file($server_file_path) && in_array($file_ex
 </table>
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

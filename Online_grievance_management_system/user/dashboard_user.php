@@ -181,6 +181,7 @@ color:white;
 
 </style>
 
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 
 <body>
@@ -273,5 +274,6 @@ else echo 'resolved';
 
 </div>
 
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

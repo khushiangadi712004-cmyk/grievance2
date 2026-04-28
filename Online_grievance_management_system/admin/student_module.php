@@ -132,6 +132,7 @@ padding:20px;
 }
 }
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 <div class="sidebar">
@@ -184,5 +185,6 @@ padding:20px;
 </table>
 </div>
 </div>
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

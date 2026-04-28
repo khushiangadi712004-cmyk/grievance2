@@ -95,6 +95,7 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 .muted{color:#6b7280;font-size:13px;}
 @media(max-width:768px){body{flex-direction:column;}.sidebar{width:100%;}.main{padding:20px;}}
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 <div class="sidebar">
@@ -161,5 +162,6 @@ $is_image = $file_name !== '' && is_file($server_file_path) && in_array($file_ex
 <?php } ?>
 </table>
 </div>
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>

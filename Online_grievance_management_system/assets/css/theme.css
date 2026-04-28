@@ -1,0 +1,207 @@
+:root {
+  --bg-color: #f4f6f9;
+  --text-color: #111827;
+  --muted-text: #64748b;
+  --card-bg: #ffffff;
+  --primary-color: #1d4ed8;
+  --sidebar-bg: linear-gradient(135deg, #4b1d95, #1d4f91);
+  --table-bg: #ffffff;
+  --table-head-bg: #1d3557;
+  --table-head-text: #ffffff;
+  --border-color: #e5e7eb;
+  --input-bg: #f8fafc;
+  --input-border: #d7dee8;
+  --button-bg: linear-gradient(135deg, #1d4ed8, #0e7490);
+  --shadow-color: rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="dark"] {
+  --bg-color: #0f172a;
+  --text-color: #e5e7eb;
+  --muted-text: #94a3b8;
+  --card-bg: #172033;
+  --primary-color: #60a5fa;
+  --sidebar-bg: linear-gradient(135deg, #111827, #1e3a8a);
+  --table-bg: #172033;
+  --table-head-bg: #0b1220;
+  --table-head-text: #f8fafc;
+  --border-color: #334155;
+  --input-bg: #111827;
+  --input-border: #475569;
+  --button-bg: linear-gradient(135deg, #2563eb, #0891b2);
+  --shadow-color: rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+html,
+body,
+.main,
+.content,
+.right,
+.section,
+.table-wrap,
+.hero-panel,
+.workflow-section,
+.login-container,
+.container {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+:root[data-theme="dark"] body {
+  background: var(--bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+:root[data-theme="dark"] .main,
+:root[data-theme="dark"] .content,
+:root[data-theme="dark"] .right {
+  background: var(--bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+:root[data-theme="dark"] .sidebar {
+  background: var(--sidebar-bg) !important;
+  color: #ffffff !important;
+}
+
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .module-card,
+:root[data-theme="dark"] .feature,
+:root[data-theme="dark"] .stat,
+:root[data-theme="dark"] .section,
+:root[data-theme="dark"] .login-container,
+:root[data-theme="dark"] .container,
+:root[data-theme="dark"] .form-card,
+:root[data-theme="dark"] .profile-card,
+:root[data-theme="dark"] .hero-panel {
+  background: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 18px 45px var(--shadow-color) !important;
+}
+
+:root[data-theme="dark"] table {
+  background: var(--table-bg) !important;
+  color: var(--text-color) !important;
+  box-shadow: 0 18px 45px var(--shadow-color) !important;
+}
+
+:root[data-theme="dark"] th {
+  background: var(--table-head-bg) !important;
+  color: var(--table-head-text) !important;
+}
+
+:root[data-theme="dark"] td {
+  background: var(--table-bg) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+:root[data-theme="dark"] h1,
+:root[data-theme="dark"] h2,
+:root[data-theme="dark"] h3,
+:root[data-theme="dark"] h4,
+:root[data-theme="dark"] label,
+:root[data-theme="dark"] p,
+:root[data-theme="dark"] .subtitle,
+:root[data-theme="dark"] .muted,
+:root[data-theme="dark"] .section-head h2,
+:root[data-theme="dark"] .section-head p {
+  color: var(--text-color) !important;
+}
+
+:root[data-theme="dark"] .muted,
+:root[data-theme="dark"] .subtitle,
+:root[data-theme="dark"] .support,
+:root[data-theme="dark"] .register,
+:root[data-theme="dark"] .bottom-text {
+  color: var(--muted-text) !important;
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+  background: var(--input-bg) !important;
+  color: var(--text-color) !important;
+  border-color: var(--input-border) !important;
+}
+
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+:root[data-theme="dark"] button,
+:root[data-theme="dark"] .login-btn,
+:root[data-theme="dark"] .register-btn,
+:root[data-theme="dark"] .btn,
+:root[data-theme="dark"] .hero-btn,
+:root[data-theme="dark"] .role-btn,
+:root[data-theme="dark"] .actions button {
+  background: var(--button-bg) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+:root[data-theme="dark"] a {
+  color: #93c5fd;
+}
+
+:root[data-theme="dark"] .status.pending,
+:root[data-theme="dark"] .pending {
+  background: #78350f !important;
+  color: #fde68a !important;
+}
+
+:root[data-theme="dark"] .status.progress,
+:root[data-theme="dark"] .progress {
+  background: #1e3a8a !important;
+  color: #bfdbfe !important;
+}
+
+:root[data-theme="dark"] .status.resolved,
+:root[data-theme="dark"] .resolved {
+  background: #14532d !important;
+  color: #bbf7d0 !important;
+}
+
+.theme-toggle-btn {
+  position: fixed;
+  top: 16px;
+  right: 18px;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, background 0.25s ease, color 0.25s ease;
+}
+
+.theme-toggle-btn:hover {
+  transform: translateY(-2px);
+}
+
+:root[data-theme="dark"] .theme-toggle-btn {
+  background: rgba(15, 23, 42, 0.92) !important;
+  color: #f8fafc !important;
+  border-color: rgba(148, 163, 184, 0.5) !important;
+}
+
+@media (max-width: 640px) {
+  .theme-toggle-btn {
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+}

@@ -141,6 +141,7 @@ button{background:#1d4f91;color:#fff;border:none;margin-top:8px;cursor:pointer;}
 .muted{color:#6b7280;font-size:13px;}
 @media(max-width:768px){body{flex-direction:column;}.sidebar{width:100%;}.main{padding:20px;}}
 </style>
+<link rel="stylesheet" href="../assets/css/theme.css">
 </head>
 <body>
 <div class="sidebar">
@@ -226,5 +227,6 @@ $is_image = $file_exists && in_array($file_ext, $image_exts, true);
 </table>
 </div>
 </div>
+<script src="../assets/js/theme.js"></script>
 </body>
 </html>
