@@ -4,34 +4,91 @@ include("../include/conn.php");
 if(isset($_POST['register']))
 {
     $mypswd = $_POST['mypswd'] ?? '';
-    $sname = $_POST['sname'];
-    $register_no = $_POST['register_no'];
-    $email = $_POST['email'];
-    $phone = $_POST['phone'];
-    $department_no = $_POST['department_no']; // ✅ FIXED
+    $sname = trim($_POST['sname'] ?? '');
+    $register_no = trim($_POST['register_no'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $department_no = trim($_POST['department_no'] ?? '');
 
-    $confirm_password = $_POST['confirm_password'];
+    $confirm_password = $_POST['confirm_password'] ?? '';
 
     if($mypswd != $confirm_password){
         echo "<script>alert('Passwords do not match');</script>";
     }
+    elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+        echo "<script>alert('Please enter a valid email address');</script>";
+    }
     else{
+        $check_stmt = mysqli_prepare($conn, "SELECT register_no, email FROM student WHERE register_no = ? OR email = ?");
 
-        $encrypted_password = password_hash($mypswd, PASSWORD_DEFAULT);
+        if($check_stmt){
+            mysqli_stmt_bind_param($check_stmt, 'ss', $register_no, $email);
+            mysqli_stmt_execute($check_stmt);
+            $check_result = mysqli_stmt_get_result($check_stmt);
+            $register_exists = false;
+            $email_exists = false;
 
-        $sql = "INSERT INTO student(sname,register_no,email,phone,mypswd,department_no)
-        VALUES('$sname','$register_no','$email','$phone','$encrypted_password','$department_no')";
+            while($existing_user = mysqli_fetch_assoc($check_result)){
+                if(strcasecmp($existing_user['register_no'], $register_no) === 0){
+                    $register_exists = true;
+                }
 
-        $result = mysqli_query($conn,$sql);
+                if(strcasecmp($existing_user['email'], $email) === 0){
+                    $email_exists = true;
+                }
+            }
 
-        if($result){
-            echo "<script>
-            alert('Registration Successful');
-            window.location='student_login.php';
-            </script>";
+            mysqli_stmt_close($check_stmt);
+
+            if($register_exists || $email_exists){
+                if($register_exists && $email_exists){
+                    echo "<script>alert('This register number and email are already registered');</script>";
+                }
+                elseif($register_exists){
+                    echo "<script>alert('This register number is already registered');</script>";
+                }
+                else{
+                    echo "<script>alert('This email is already registered');</script>";
+                }
+            }
+            else{
+                $encrypted_password = password_hash($mypswd, PASSWORD_DEFAULT);
+                $insert_stmt = mysqli_prepare($conn, "INSERT INTO student(sname,register_no,email,phone,mypswd,department_no) VALUES(?,?,?,?,?,?)");
+
+                if($insert_stmt){
+                    mysqli_stmt_bind_param($insert_stmt, 'ssssss', $sname, $register_no, $email, $phone, $encrypted_password, $department_no);
+                    $registration_error = 'Registration failed. Please try again';
+
+                    try{
+                        $result = mysqli_stmt_execute($insert_stmt);
+                    }
+                    catch(mysqli_sql_exception $e){
+                        $result = false;
+
+                        if($e->getCode() == 1062){
+                            $registration_error = 'This register number or email is already registered';
+                        }
+                    }
+
+                    mysqli_stmt_close($insert_stmt);
+
+                    if($result){
+                        echo "<script>
+                        alert('Registration Successful');
+                        window.location='student_login.php';
+                        </script>";
+                    }
+                    else{
+                        echo "<script>alert('$registration_error');</script>";
+                    }
+                }
+                else{
+                    echo "<script>alert('Registration failed. Please try again');</script>";
+                }
+            }
         }
         else{
-            echo "Error: " . mysqli_error($conn);
+            echo "<script>alert('Registration failed. Please try again');</script>";
         }
     }
 }
