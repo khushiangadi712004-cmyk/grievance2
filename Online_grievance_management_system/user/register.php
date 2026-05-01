@@ -18,6 +18,12 @@ if(isset($_POST['register']))
     elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)){
         echo "<script>alert('Please enter a valid email address');</script>";
     }
+    elseif(!preg_match('/^\+91[0-9]{10}$/', $phone)){
+        echo "<script>alert('Phone number must start with +91 followed by 10 digits');</script>";
+    }
+    elseif(!preg_match('/^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/', $mypswd)){
+        echo "<script>alert('Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character');</script>";
+    }
     else{
         $check_stmt = mysqli_prepare($conn, "SELECT register_no, email FROM student WHERE register_no = ? OR email = ?");
 
@@ -370,7 +376,7 @@ font-size:29px;
 <h2>Create Account</h2>
 <p class="subtitle">Register for the Grievance Management System</p>
 
-<form  method="post">
+<form  method="post" id="registerForm">
 
 
 <label>Name</label>
@@ -383,7 +389,7 @@ font-size:29px;
 <input type="email" name="email" placeholder="Enter email" required>
 
 <label>Phone Number</label>
-<input type="tel" name="phone" placeholder="Enter phone number" required>
+<input type="tel" name="phone" placeholder="+919876543210" pattern="^\+91[0-9]{10}$" title="Phone number must start with +91 followed by 10 digits" required>
  
 <label>Department</label>
 <select name="department_no" required>
@@ -397,7 +403,7 @@ font-size:29px;
 <label>Password</label>
 
 <div class="password-box">
-<input type="password" id="mypswd" name="mypswd" placeholder="Enter password" required>
+<input type="password" id="mypswd" name="mypswd" placeholder="Enter password" pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}" title="Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character" required>
 <i class="fa-solid fa-eye eye" onclick="togglePassword()"></i>
 </div>
 
@@ -427,6 +433,38 @@ pass.type="password";
 }
 
 }
+
+document.getElementById("registerForm").addEventListener("submit", function(e){
+let email=this.email.value.trim();
+let phone=this.phone.value.trim();
+let password=this.mypswd.value;
+let confirmPassword=this.confirm_password.value;
+let phonePattern=/^\+91[0-9]{10}$/;
+let passwordPattern=/^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
+
+if(!this.email.checkValidity()){
+alert("Please enter a valid email address");
+e.preventDefault();
+return;
+}
+
+if(!phonePattern.test(phone)){
+alert("Phone number must start with +91 followed by 10 digits");
+e.preventDefault();
+return;
+}
+
+if(!passwordPattern.test(password)){
+alert("Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character");
+e.preventDefault();
+return;
+}
+
+if(password!==confirmPassword){
+alert("Passwords do not match");
+e.preventDefault();
+}
+});
 
 </script>
 

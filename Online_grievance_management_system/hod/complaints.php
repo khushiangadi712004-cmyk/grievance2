@@ -8,11 +8,25 @@ if(!isset($_SESSION['hod_id'])){
 }
 
 $hod_name = $_SESSION['hod_name'] ?? 'HOD';
-$department_no = $_SESSION['hod_department_no'] ?? '';
+$departments = [
+    1 => 'BCA',
+    2 => 'BSC',
+    3 => 'B.COM',
+    4 => 'BBA'
+];
 
-$complaints = mysqli_query(
-    $conn,
-    "SELECT complaint_id,
+$department_no = isset($_GET['department_no']) ? (int) $_GET['department_no'] : 0;
+
+if(!array_key_exists($department_no, $departments)){
+    $department_no = 0;
+}
+
+$complaints = false;
+
+if($department_no > 0){
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT complaint_id,
             CONVERT(register_no USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitted_by,
             category_id,
             CONVERT(description USING utf8mb4) COLLATE utf8mb4_unicode_ci AS description,
@@ -20,19 +34,26 @@ $complaints = mysqli_query(
             CONVERT(status USING utf8mb4) COLLATE utf8mb4_unicode_ci AS status,
             date_submitted
      FROM complaint
-     WHERE department_no = '$department_no'
+     WHERE department_no = ?
      UNION ALL
-     SELECT complaint_id,
-            CONVERT(CAST(staff_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitted_by,
-            category_id,
-            CONVERT(description USING utf8mb4) COLLATE utf8mb4_unicode_ci AS description,
-            CONVERT(file_upload USING utf8mb4) COLLATE utf8mb4_unicode_ci AS file_upload,
-            CONVERT(status USING utf8mb4) COLLATE utf8mb4_unicode_ci AS status,
-            date_submitted
-     FROM staff_complaint
-     WHERE department_no = '$department_no'
+     SELECT sc.complaint_id,
+            CONVERT(CAST(sc.staff_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_unicode_ci AS submitted_by,
+            sc.category_id,
+            CONVERT(sc.description USING utf8mb4) COLLATE utf8mb4_unicode_ci AS description,
+            CONVERT(sc.file_upload USING utf8mb4) COLLATE utf8mb4_unicode_ci AS file_upload,
+            CONVERT(sc.status USING utf8mb4) COLLATE utf8mb4_unicode_ci AS status,
+            sc.date_submitted
+     FROM staff_complaint sc
+     LEFT JOIN staff st ON st.staff_id = sc.staff_id
+     WHERE COALESCE(st.department_no, sc.department_no) = ?
      ORDER BY complaint_id DESC"
-);
+    );
+    if($stmt){
+        mysqli_stmt_bind_param($stmt, 'ii', $department_no, $department_no);
+        mysqli_stmt_execute($stmt);
+        $complaints = mysqli_stmt_get_result($stmt);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -176,9 +197,9 @@ padding:20px;
 
 <div class="sidebar">
 <h2>HOD Panel</h2>
-<p><?php echo htmlspecialchars($hod_name); ?> | Dept: <?php echo htmlspecialchars((string) $department_no); ?></p>
+<p><?php echo htmlspecialchars($hod_name); ?> | Dept: <?php echo $department_no > 0 ? htmlspecialchars($departments[$department_no]) : 'Not selected'; ?></p>
 
-<a href="dashboard_hod.php"><i class="fa fa-home"></i> Dashboard</a>
+<a href="dashboard_hod.php<?php echo $department_no > 0 ? '?department_no=' . $department_no : ''; ?>"><i class="fa fa-home"></i> Dashboard</a>
 <a href="complaints.php" class="active"><i class="fa fa-list"></i> Department Complaints</a>
 <a href="../index.php"><i class="fa fa-home"></i> Main Portal</a>
 <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Logout</a>
@@ -189,6 +210,19 @@ padding:20px;
 <h1>Department Complaints</h1>
 <p>All complaints currently mapped to your department.</p>
 </div>
+
+<form method="get" action="complaints.php" style="margin-bottom:20px;background:#fff;padding:16px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+<label for="department_no" style="font-weight:700;color:#5b2c6f;margin-right:10px;">Select Department:</label>
+<select name="department_no" id="department_no" onchange="this.form.submit()" style="padding:10px;border-radius:8px;border:1px solid #d1d5db;min-width:180px;">
+<option value="">-- Select Department --</option>
+<?php foreach($departments as $dept_no => $dept_name) { ?>
+<option value="<?php echo $dept_no; ?>" <?php echo $department_no === $dept_no ? 'selected' : ''; ?>>
+<?php echo htmlspecialchars($dept_name); ?>
+</option>
+<?php } ?>
+</select>
+<noscript><button type="submit" style="padding:10px 14px;border:0;border-radius:8px;background:#5b2c6f;color:#fff;">Filter</button></noscript>
+</form>
 
 <div class="table-wrap">
 <table>

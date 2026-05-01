@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `complaint` (
   KEY `fk_stud_id` (`register_no`) USING BTREE,
   KEY `fk_dept_no` (`department_no`) USING BTREE,
   KEY `fk_staff_id` (`staff_id`) USING BTREE
-) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `complaint`

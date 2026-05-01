@@ -189,6 +189,7 @@ border-radius:5px;
 <textarea name="description" placeholder="Describe your grievance in detail..." required></textarea>
 
 <label>Upload File</label>
+<input type="hidden" name="MAX_FILE_SIZE" value="5242880">
 <input type="file" name="file_upload" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
 
 <div class="actions">

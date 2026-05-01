@@ -25,6 +25,12 @@ $pending_result = mysqli_query($conn,$pending_query);
 $pending_row = mysqli_fetch_assoc($pending_result);
 $pending = $pending_row['pending'];
 
+/* In progress complaints */
+$progress_query = "SELECT COUNT(*) as progress FROM complaint WHERE register_no='$register_no' AND status='In Progress'";
+$progress_result = mysqli_query($conn,$progress_query);
+$progress_row = mysqli_fetch_assoc($progress_result);
+$progress = $progress_row['progress'];
+
 /* Resolved complaints */
 $resolved_query = "SELECT COUNT(*) as resolved FROM complaint WHERE register_no='$register_no' AND status='Resolved'";
 $resolved_result = mysqli_query($conn,$resolved_query);
@@ -115,7 +121,7 @@ color:#0f3d56;
 
 .cards{
 display:grid;
-grid-template-columns:repeat(3,1fr);
+grid-template-columns:repeat(4,1fr);
 gap:20px;
 margin-bottom:30px;
 }
@@ -221,6 +227,11 @@ color:white;
 <div class="card">
 <h3>Pending</h3>
 <p><?php echo $pending; ?></p>
+</div>
+
+<div class="card">
+<h3>In Progress</h3>
+<p><?php echo $progress; ?></p>
 </div>
 
 <div class="card">

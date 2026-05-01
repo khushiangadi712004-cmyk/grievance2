@@ -9,7 +9,18 @@ if(!isset($_SESSION['hod_id'])){
 }
 
 $hod_name = $_SESSION['hod_name'] ?? 'HOD';
-$department_no = $_SESSION['hod_department_no'] ?? '';
+$departments = [
+    1 => 'BCA',
+    2 => 'BSC',
+    3 => 'B.COM',
+    4 => 'BBA'
+];
+
+$department_no = isset($_GET['department_no']) ? (int) $_GET['department_no'] : 0;
+
+if(!array_key_exists($department_no, $departments)){
+    $department_no = 0;
+}
 
 $message = '';
 
@@ -22,14 +33,21 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $message = handle_complaint_action($conn, $table_name, $complaint_id, $source_type, 'HOD', $action, '', $remarks);
 }
 
-$total_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no'") +
-                    fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no'");
-$pending_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Pending'") +
-                      fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Pending'");
-$progress_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'In Progress'") +
-                       fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'In Progress'");
-$resolved_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Resolved'") +
-                       fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'HOD' AND department_no = '$department_no' AND status = 'Resolved'");
+$total_department = 0;
+$pending_department = 0;
+$progress_department = 0;
+$resolved_department = 0;
+
+if($department_no > 0){
+    $total_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = $department_no") +
+                        fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint sc LEFT JOIN staff st ON st.staff_id = sc.staff_id WHERE COALESCE(st.department_no, sc.department_no) = $department_no AND (sc.assigned_to = 'HOD' OR sc.escalated_to = 'HOD')");
+    $pending_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = $department_no AND status = 'Pending'") +
+                          fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint sc LEFT JOIN staff st ON st.staff_id = sc.staff_id WHERE COALESCE(st.department_no, sc.department_no) = $department_no AND (sc.assigned_to = 'HOD' OR sc.escalated_to = 'HOD') AND sc.status = 'Pending'");
+    $progress_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = $department_no AND status = 'In Progress'") +
+                           fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint sc LEFT JOIN staff st ON st.staff_id = sc.staff_id WHERE COALESCE(st.department_no, sc.department_no) = $department_no AND (sc.assigned_to = 'HOD' OR sc.escalated_to = 'HOD') AND sc.status = 'In Progress'");
+    $resolved_department = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'HOD' AND department_no = $department_no AND status = 'Resolved'") +
+                           fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint sc LEFT JOIN staff st ON st.staff_id = sc.staff_id WHERE COALESCE(st.department_no, sc.department_no) = $department_no AND (sc.assigned_to = 'HOD' OR sc.escalated_to = 'HOD') AND sc.status = 'Resolved'");
+}
 $escalated_to_hod = $total_department;
 
 $recent_complaints = false;
@@ -59,12 +77,11 @@ $recent_stmt = mysqli_prepare(
             CONVERT(sc.file_upload USING utf8mb4) COLLATE utf8mb4_unicode_ci AS file_upload
      FROM staff_complaint sc
      LEFT JOIN staff st ON st.staff_id = sc.staff_id
-     WHERE sc.assigned_to = 'HOD' AND sc.department_no = ?
+     WHERE COALESCE(st.department_no, sc.department_no) = ? AND (sc.assigned_to = 'HOD' OR sc.escalated_to = 'HOD')
      ORDER BY date_submitted DESC, complaint_id DESC"
 );
-if($recent_stmt){
-    $hod_department_no = (int) $department_no;
-    mysqli_stmt_bind_param($recent_stmt, 'ii', $hod_department_no, $hod_department_no);
+if($recent_stmt && $department_no > 0){
+    mysqli_stmt_bind_param($recent_stmt, 'ii', $department_no, $department_no);
     mysqli_stmt_execute($recent_stmt);
     $recent_complaints = mysqli_stmt_get_result($recent_stmt);
 }
@@ -234,7 +251,7 @@ padding:20px;
 
 <div class="sidebar">
 <h2>HOD Panel</h2>
-<p><?php echo htmlspecialchars($hod_name); ?> | Dept: <?php echo htmlspecialchars((string) $department_no); ?></p>
+<p><?php echo htmlspecialchars($hod_name); ?> | Dept: <?php echo $department_no > 0 ? htmlspecialchars($departments[$department_no]) : 'Not selected'; ?></p>
 
 <a href="dashboard_hod.php" class="active"><i class="fa fa-home"></i> Dashboard</a>
 <a href="complaints.php"><i class="fa fa-list"></i> Department Complaints</a>
@@ -251,6 +268,19 @@ padding:20px;
 <?php if($message !== '') { ?>
 <div style="margin-bottom:18px;padding:12px;border-radius:8px;background:#ede9fe;color:#4c1d95;"><?php echo htmlspecialchars($message); ?></div>
 <?php } ?>
+
+<form method="get" action="dashboard_hod.php" style="margin-bottom:20px;background:#fff;padding:16px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+<label for="department_no" style="font-weight:700;color:#5b2c6f;margin-right:10px;">Select Department:</label>
+<select name="department_no" id="department_no" onchange="this.form.submit()" style="padding:10px;border-radius:8px;border:1px solid #d1d5db;min-width:180px;">
+<option value="">-- Select Department --</option>
+<?php foreach($departments as $dept_no => $dept_name) { ?>
+<option value="<?php echo $dept_no; ?>" <?php echo $department_no === $dept_no ? 'selected' : ''; ?>>
+<?php echo htmlspecialchars($dept_name); ?>
+</option>
+<?php } ?>
+</select>
+<noscript><button type="submit" style="padding:10px 14px;border:0;border-radius:8px;background:#5b2c6f;color:#fff;">Filter</button></noscript>
+</form>
 
 <div class="cards">
 <div class="card">
