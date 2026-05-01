@@ -12,11 +12,12 @@ $register_no = $_SESSION['register_no'];
 $name = $_SESSION['student_name'] ?? "User";
 $email = $_SESSION['student_email'] ?? "user@email.com";
 $department = (int) ($_SESSION['student_department_no'] ?? 0);
+$semester = $_SESSION['student_semester'] ?? '';
 $role = $_SESSION['role'] ?? "Student";
 $message = '';
 $message_class = '';
 
-$stmt = mysqli_prepare($conn, "SELECT sname, email, department_no FROM student WHERE register_no = ? LIMIT 1");
+$stmt = mysqli_prepare($conn, "SELECT sname, email, department_no, semester FROM student WHERE register_no = ? LIMIT 1");
 if($stmt){
 mysqli_stmt_bind_param($stmt, 's', $register_no);
 mysqli_stmt_execute($stmt);
@@ -28,9 +29,11 @@ if($student){
 $_SESSION['student_name'] = $student['sname'];
 $_SESSION['student_email'] = $student['email'];
 $_SESSION['student_department_no'] = $student['department_no'];
+$_SESSION['student_semester'] = $student['semester'];
 $name = $student['sname'];
 $email = $student['email'];
 $department = (int) $student['department_no'];
+$semester = $student['semester'];
 }
 }
 
@@ -39,19 +42,25 @@ $department = (int) $student['department_no'];
 if(isset($_POST['update'])){
 $new_name = trim($_POST['name'] ?? '');
 $new_email = trim($_POST['email'] ?? '');
+$new_semester = trim($_POST['semester'] ?? '');
 
 if($new_name === '' || $new_email === '' || !filter_var($new_email, FILTER_VALIDATE_EMAIL)){
 $message = 'Please enter a valid name and email.';
 $message_class = 'error-message';
+} elseif(!in_array($new_semester, ['1', '2', '3', '4', '5', '6'], true)){
+$message = 'Please select a valid semester.';
+$message_class = 'error-message';
 } else {
-$update_stmt = mysqli_prepare($conn, "UPDATE student SET sname = ?, email = ? WHERE register_no = ?");
+$update_stmt = mysqli_prepare($conn, "UPDATE student SET sname = ?, email = ?, semester = ? WHERE register_no = ?");
 if($update_stmt){
-mysqli_stmt_bind_param($update_stmt, 'sss', $new_name, $new_email, $register_no);
+mysqli_stmt_bind_param($update_stmt, 'ssss', $new_name, $new_email, $new_semester, $register_no);
 if(mysqli_stmt_execute($update_stmt)){
 $_SESSION['student_name'] = $new_name;
 $_SESSION['student_email'] = $new_email;
+$_SESSION['student_semester'] = $new_semester;
 $name = $new_name;
 $email = $new_email;
+$semester = $new_semester;
 $message = 'Profile updated successfully.';
 $message_class = 'success-message';
 } else {
@@ -72,6 +81,7 @@ $edit = isset($_GET['edit']);
 $name=$_SESSION['student_name']?? "User";
 $email=$_SESSION['student_email']??"user@email.com";
 $department=(int) ($_SESSION['student_department_no']?? 0);
+$semester=$_SESSION['student_semester']?? '';
 $role = $_SESSION['role'] ?? "Student";
 $department_name = $department > 0 ? department_name($department) : 'Not Assigned';
 
@@ -221,7 +231,8 @@ color:gray;
 font-weight:bold;
 }
 
-input{
+input,
+select{
 width:100%;
 padding:8px;
 border:1px solid #ccc;
@@ -353,6 +364,28 @@ color:#b42318;
 <input type="text" value="<?php echo htmlspecialchars($department_name); ?>" disabled>
 <?php } else { ?>
 <div class="value"><?php echo htmlspecialchars($department_name); ?></div>
+<?php } ?>
+
+</div>
+</div>
+
+<div class="detail">
+<i class="fa fa-calendar"></i>
+<div style="width:100%">
+<div class="label">Semester</div>
+
+<?php if($edit){ ?>
+<select name="semester" required>
+<option value="">Select Semester</option>
+<option value="1" <?php echo $semester === '1' ? 'selected' : ''; ?>>1</option>
+<option value="2" <?php echo $semester === '2' ? 'selected' : ''; ?>>2</option>
+<option value="3" <?php echo $semester === '3' ? 'selected' : ''; ?>>3</option>
+<option value="4" <?php echo $semester === '4' ? 'selected' : ''; ?>>4</option>
+<option value="5" <?php echo $semester === '5' ? 'selected' : ''; ?>>5</option>
+<option value="6" <?php echo $semester === '6' ? 'selected' : ''; ?>>6</option>
+</select>
+<?php } else { ?>
+<div class="value"><?php echo htmlspecialchars((string) $semester); ?></div>
 <?php } ?>
 
 </div>

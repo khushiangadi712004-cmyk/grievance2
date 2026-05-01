@@ -12,7 +12,6 @@ $staff_id = $_SESSION['staff_id'];
 $staff_name = $_SESSION['staff_name'] ?? 'Staff';
 $department_no = $_SESSION['staff_department_no'] ?? '';
 $staff_design = $_SESSION['staff_design'] ?? 'Staff';
-$message = '';
 $dept_stmt = mysqli_prepare($conn, "SELECT department_no FROM staff WHERE staff_id = ? LIMIT 1");
 if($dept_stmt){
     mysqli_stmt_bind_param($dept_stmt, 'i', $staff_id);
@@ -29,7 +28,7 @@ if(isset($_POST['submit'])){
     $description = trim($_POST['description'] ?? '');
 
     if(!in_array($category_id, [1, 2, 3], true) || $selected_department <= 0 || $description === ''){
-        $message = 'Invalid complaint details.';
+        echo "<script>alert('Invalid complaint details');</script>";
     } else {
         switch ($category_id) {
             case 1:
@@ -52,12 +51,12 @@ if(isset($_POST['submit'])){
         $upload_error = '';
         $uploaded_file = save_uploaded_complaint_file('file_upload', $upload_error);
         if($uploaded_file === false){
-            $message = $upload_error;
+            echo "<script>alert('" . addslashes($upload_error) . "');</script>";
         } else {
             $file_name = $uploaded_file;
         }
 
-        if($message === ''){
+        if($uploaded_file !== false){
             // Auto route staff complaint by category using prepared statement.
             $stmt = mysqli_prepare(
                 $conn,
@@ -81,14 +80,14 @@ if(isset($_POST['submit'])){
                 );
 
                 if(mysqli_stmt_execute($stmt)){
-                    $message = 'Complaint submitted successfully.';
+                    echo "<script>alert('Complaint Submitted Successfully');</script>";
                 } else {
-                    $message = 'Unable to submit complaint.';
+                    echo "<script>alert('Unable to submit complaint');</script>";
                 }
 
                 mysqli_stmt_close($stmt);
             } else {
-                $message = 'Unable to prepare complaint submission.';
+                echo "<script>alert('Unable to prepare complaint submission');</script>";
             }
         }
     }
@@ -244,10 +243,6 @@ padding:20px;
 </div>
 
 <div class="form-card">
-<?php if($message !== '') { ?>
-<div class="message"><?php echo htmlspecialchars($message); ?></div>
-<?php } ?>
-
 <form method="post" enctype="multipart/form-data">
 <label>Category</label>
 <select name="category_id" required>

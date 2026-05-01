@@ -9,6 +9,7 @@ if(isset($_POST['register']))
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
     $department_no = trim($_POST['department_no'] ?? '');
+    $semester = trim($_POST['semester'] ?? '');
 
     $confirm_password = $_POST['confirm_password'] ?? '';
 
@@ -23,6 +24,9 @@ if(isset($_POST['register']))
     }
     elseif(!preg_match('/^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/', $mypswd)){
         echo "<script>alert('Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character');</script>";
+    }
+    elseif(!in_array($semester, ['1', '2', '3', '4', '5', '6'], true)){
+        echo "<script>alert('Please select a valid semester');</script>";
     }
     else{
         $check_stmt = mysqli_prepare($conn, "SELECT register_no, email FROM student WHERE register_no = ? OR email = ?");
@@ -59,10 +63,10 @@ if(isset($_POST['register']))
             }
             else{
                 $encrypted_password = password_hash($mypswd, PASSWORD_DEFAULT);
-                $insert_stmt = mysqli_prepare($conn, "INSERT INTO student(sname,register_no,email,phone,mypswd,department_no) VALUES(?,?,?,?,?,?)");
+                $insert_stmt = mysqli_prepare($conn, "INSERT INTO student(sname,register_no,email,phone,mypswd,department_no,semester) VALUES(?,?,?,?,?,?,?)");
 
                 if($insert_stmt){
-                    mysqli_stmt_bind_param($insert_stmt, 'ssssss', $sname, $register_no, $email, $phone, $encrypted_password, $department_no);
+                    mysqli_stmt_bind_param($insert_stmt, 'sssssss', $sname, $register_no, $email, $phone, $encrypted_password, $department_no, $semester);
                     $registration_error = 'Registration failed. Please try again';
 
                     try{
@@ -398,6 +402,17 @@ font-size:29px;
     <option value="2">BSC</option>
     <option value="3">B.COM</option>
     <option value="4">BBA</option>
+</select>
+
+<label>Semester</label>
+<select name="semester" required>
+    <option value="">Select Semester</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
 </select>
 
 <label>Password</label>
