@@ -9,9 +9,12 @@ if(!isset($_SESSION['principal_id'])){
 }
 
 $principal_name = $_SESSION['principal_name'] ?? 'Principal';
+$principal_id = $_SESSION['principal_id'];
 $message = '';
 
-if($_SERVER['REQUEST_METHOD'] === 'POST'){
+if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notification_id'])){
+    mark_notification_read($conn, (int) $_POST['notification_id'], 'Principal', $principal_id);
+} elseif($_SERVER['REQUEST_METHOD'] === 'POST'){
     $source_type = $_POST['source_type'] ?? 'complaint';
     $table_name = $source_type === 'staff' ? 'staff_complaint' : 'complaint';
     $complaint_id = (int) ($_POST['complaint_id'] ?? 0);
@@ -20,6 +23,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $target_role = $_POST['escalated_to'] ?? '';
     $message = handle_complaint_action($conn, $table_name, $complaint_id, $source_type, 'Principal', $action, $target_role, $remarks);
 }
+
+$notifications = get_user_notifications($conn, 'Principal', $principal_id, 5);
 
 $principal_total = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'Principal'") + fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'Principal'");
 $principal_pending = fetch_count($conn, "SELECT COUNT(*) FROM complaint WHERE assigned_to = 'Principal' AND status = 'Pending'") + fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE assigned_to = 'Principal' AND status = 'Pending'");
@@ -101,6 +106,12 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 .complaint-image img{width:90px;height:68px;object-fit:cover;border-radius:8px;border:1px solid #d1d5db;background:#f8fafc;}
 .complaint-image a{color:#7c2d12;font-weight:700;text-decoration:none;}
 .muted{color:#6b7280;font-size:13px;}
+.notifications{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin-bottom:30px;}
+.notification-item{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #e5e7eb;}
+.notification-item:last-child{border-bottom:0;}
+.notification-item.unread{font-weight:700;}
+.notification-item small{display:block;color:#6b7280;margin-top:4px;font-weight:400;}
+.notification-item button{padding:8px 12px;border:0;border-radius:6px;background:#7c2d12;color:#fff;cursor:pointer;}
 @media(max-width:768px){body{flex-direction:column;}.sidebar{width:100%;}.main{padding:20px;}}
 </style>
 <link rel="stylesheet" href="../assets/css/theme.css">
@@ -124,6 +135,27 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 <div class="card"><h3>Pending</h3><p><?php echo $principal_pending; ?></p></div>
 <div class="card"><h3>In Progress</h3><p><?php echo $principal_progress; ?></p></div>
 <div class="card"><h3>Resolved</h3><p><?php echo $principal_resolved; ?></p></div>
+</div>
+<div class="notifications">
+<h2 style="margin-bottom:12px;">Notifications</h2>
+<?php if(count($notifications) > 0) { ?>
+<?php foreach($notifications as $notification) { ?>
+<div class="notification-item <?php echo $notification['status'] === 'Unread' ? 'unread' : ''; ?>">
+<div>
+<?php echo htmlspecialchars((string) $notification['message']); ?>
+<small><?php echo htmlspecialchars((string) $notification['date_sent']); ?> | <?php echo htmlspecialchars((string) $notification['status']); ?></small>
+</div>
+<?php if($notification['status'] === 'Unread') { ?>
+<form method="post">
+<input type="hidden" name="notification_id" value="<?php echo htmlspecialchars((string) $notification['notification_id']); ?>">
+<button type="submit">Mark Read</button>
+</form>
+<?php } ?>
+</div>
+<?php } ?>
+<?php } else { ?>
+<p>No notifications.</p>
+<?php } ?>
 </div>
 <table>
 <tr><th>ID</th><th>Source</th><th>Submitted By</th><th>Department</th><th>Category</th><th>Description</th><th>Status</th><th>Date Submitted</th><th>Uploaded Image</th><th>Action</th></tr>

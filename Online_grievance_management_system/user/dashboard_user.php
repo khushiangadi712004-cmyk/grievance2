@@ -12,6 +12,11 @@ if(!isset($_SESSION['register_no'])){
 
 $register_no = $_SESSION['register_no'];
 
+if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notification_id'])){
+    mark_notification_read($conn, (int) $_POST['notification_id'], 'Student', $register_no);
+}
+
+$notifications = get_user_notifications($conn, 'Student', $register_no, 5);
 
 /* Total complaints */
 $total_query = "SELECT COUNT(*) as total FROM complaint WHERE register_no='$register_no'";
@@ -185,6 +190,46 @@ background:#28a745;
 color:white;
 }
 
+.notifications{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 2px 10px rgba(0,0,0,0.1);
+margin-bottom:30px;
+}
+
+.notification-item{
+display:flex;
+justify-content:space-between;
+gap:16px;
+padding:12px 0;
+border-bottom:1px solid #eee;
+}
+
+.notification-item:last-child{
+border-bottom:0;
+}
+
+.notification-item.unread{
+font-weight:700;
+}
+
+.notification-item small{
+display:block;
+color:#6b7280;
+margin-top:4px;
+font-weight:400;
+}
+
+.notification-item button{
+padding:8px 12px;
+border:0;
+border-radius:6px;
+background:#0f3d56;
+color:#fff;
+cursor:pointer;
+}
+
 </style>
 
 <link rel="stylesheet" href="../assets/css/theme.css">
@@ -239,6 +284,28 @@ color:white;
 <p><?php echo $resolved; ?></p>
 </div>
 
+</div>
+
+<div class="notifications">
+<h2 style="margin-bottom:10px;">Notifications</h2>
+<?php if(count($notifications) > 0) { ?>
+<?php foreach($notifications as $notification) { ?>
+<div class="notification-item <?php echo $notification['status'] === 'Unread' ? 'unread' : ''; ?>">
+<div>
+<?php echo htmlspecialchars((string) $notification['message']); ?>
+<small><?php echo htmlspecialchars((string) $notification['date_sent']); ?> | <?php echo htmlspecialchars((string) $notification['status']); ?></small>
+</div>
+<?php if($notification['status'] === 'Unread') { ?>
+<form method="post">
+<input type="hidden" name="notification_id" value="<?php echo htmlspecialchars((string) $notification['notification_id']); ?>">
+<button type="submit">Mark Read</button>
+</form>
+<?php } ?>
+</div>
+<?php } ?>
+<?php } else { ?>
+<p>No notifications.</p>
+<?php } ?>
 </div>
 
 <!-- Complaint Table -->

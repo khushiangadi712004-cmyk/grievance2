@@ -80,6 +80,9 @@ if(isset($_POST['submit'])){
                 );
 
                 if(mysqli_stmt_execute($stmt)){
+                    $complaint_id = mysqli_insert_id($conn);
+                    $notification_message = 'New ' . category_name($category_id) . ' staff complaint ID ' . $complaint_id . ' has been submitted.';
+                    notify_assigned_role($conn, $complaint_id, $assigned_to, $selected_department, $notification_message);
                     echo "<script>alert('Complaint Submitted Successfully');</script>";
                 } else {
                     echo "<script>alert('Unable to submit complaint');</script>";

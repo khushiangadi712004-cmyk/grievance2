@@ -42,6 +42,9 @@ $error = $_GET['error'] ?? '';
 <button type="button" class="refresh" onclick="generateCaptcha()"><i class="fa fa-refresh"></i></button>
 </div>
 <input type="text" id="captchaInput" placeholder="Enter captcha" required>
+<div class="options">
+<a href="forgot_password.php">Forgot password?</a>
+</div>
 <button class="login-btn" type="submit">Sign In as Principal</button>
 </form>
 </div>

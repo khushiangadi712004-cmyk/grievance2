@@ -9,6 +9,7 @@ if(!isset($_SESSION['hod_id'])){
 }
 
 $hod_name = $_SESSION['hod_name'] ?? 'HOD';
+$hod_id = $_SESSION['hod_id'];
 $departments = [
     1 => 'BCA',
     2 => 'BSC',
@@ -24,7 +25,9 @@ if(!array_key_exists($department_no, $departments)){
 
 $message = '';
 
-if($_SERVER['REQUEST_METHOD'] === 'POST'){
+if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notification_id'])){
+    mark_notification_read($conn, (int) $_POST['notification_id'], 'HOD', $hod_id);
+} elseif($_SERVER['REQUEST_METHOD'] === 'POST'){
     $source_type = $_POST['source_type'] ?? 'complaint';
     $table_name = $source_type === 'staff' ? 'staff_complaint' : 'complaint';
     $complaint_id = (int) ($_POST['complaint_id'] ?? 0);
@@ -32,6 +35,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $remarks = trim($_POST['remarks'] ?? '');
     $message = handle_complaint_action($conn, $table_name, $complaint_id, $source_type, 'HOD', $action, '', $remarks);
 }
+
+$notifications = get_user_notifications($conn, 'HOD', $hod_id, 5);
 
 $total_department = 0;
 $pending_department = 0;
@@ -207,6 +212,12 @@ vertical-align:top;
 .complaint-image img{width:90px;height:68px;object-fit:cover;border-radius:8px;border:1px solid #d1d5db;background:#f8fafc;}
 .complaint-image a{color:#5b2c6f;font-weight:700;text-decoration:none;}
 .muted{color:#6b7280;font-size:13px;}
+.notifications{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin-bottom:30px;}
+.notification-item{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #e5e7eb;}
+.notification-item:last-child{border-bottom:0;}
+.notification-item.unread{font-weight:700;}
+.notification-item small{display:block;color:#6b7280;margin-top:4px;font-weight:400;}
+.notification-item button{padding:8px 12px;border:0;border-radius:6px;background:#5b2c6f;color:#fff;cursor:pointer;}
 
 .status{
 display:inline-block;
@@ -303,6 +314,28 @@ padding:20px;
 <h3>Escalated To HOD</h3>
 <p><?php echo $escalated_to_hod; ?></p>
 </div>
+</div>
+
+<div class="notifications">
+<h2 style="margin-bottom:12px;">Notifications</h2>
+<?php if(count($notifications) > 0) { ?>
+<?php foreach($notifications as $notification) { ?>
+<div class="notification-item <?php echo $notification['status'] === 'Unread' ? 'unread' : ''; ?>">
+<div>
+<?php echo htmlspecialchars((string) $notification['message']); ?>
+<small><?php echo htmlspecialchars((string) $notification['date_sent']); ?> | <?php echo htmlspecialchars((string) $notification['status']); ?></small>
+</div>
+<?php if($notification['status'] === 'Unread') { ?>
+<form method="post">
+<input type="hidden" name="notification_id" value="<?php echo htmlspecialchars((string) $notification['notification_id']); ?>">
+<button type="submit">Mark Read</button>
+</form>
+<?php } ?>
+</div>
+<?php } ?>
+<?php } else { ?>
+<p>No notifications.</p>
+<?php } ?>
 </div>
 
 <h2 style="margin-bottom:12px;">Recent Department Complaints</h2>

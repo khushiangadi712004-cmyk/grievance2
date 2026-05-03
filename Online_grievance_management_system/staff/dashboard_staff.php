@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../include/conn.php';
+include '../include/notification_helper.php';
 
 if(!isset($_SESSION['staff_id'])){
     header('Location: staff_login.php');
@@ -11,6 +12,12 @@ $staff_id = $_SESSION['staff_id'];
 $staff_name = $_SESSION['staff_name'] ?? 'Staff';
 $department_no = $_SESSION['staff_department_no'] ?? 'N/A';
 $staff_design = $_SESSION['staff_design'] ?? 'Staff';
+
+if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notification_id'])){
+    mark_notification_read($conn, (int) $_POST['notification_id'], 'Staff', $staff_id);
+}
+
+$notifications = get_user_notifications($conn, 'Staff', $staff_id, 5);
 
 function fetch_count($conn, $query) {
     $result = mysqli_query($conn, $query);
@@ -67,6 +74,12 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 .pending{background:#fde68a;color:#854d0e;}
 .progress{background:#bfdbfe;color:#1d4ed8;}
 .resolved{background:#bbf7d0;color:#166534;}
+.notifications{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin-bottom:30px;}
+.notification-item{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #e5e7eb;}
+.notification-item:last-child{border-bottom:0;}
+.notification-item.unread{font-weight:700;}
+.notification-item small{display:block;color:#6b7280;margin-top:4px;font-weight:400;}
+.notification-item button{padding:8px 12px;border:0;border-radius:6px;background:#0f3d56;color:#fff;cursor:pointer;}
 @media(max-width:768px){body{flex-direction:column;}.sidebar{width:100%;}.main{padding:20px;}}
 </style>
 <link rel="stylesheet" href="../assets/css/theme.css">
@@ -91,6 +104,27 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 <div class="card"><h3>Pending</h3><p><?php echo $pending_total; ?></p></div>
 <div class="card"><h3>In Progress</h3><p><?php echo $progress_total; ?></p></div>
 <div class="card"><h3>Resolved</h3><p><?php echo $resolved_total; ?></p></div>
+</div>
+<div class="notifications">
+<h2 style="margin-bottom:12px;">Notifications</h2>
+<?php if(count($notifications) > 0) { ?>
+<?php foreach($notifications as $notification) { ?>
+<div class="notification-item <?php echo $notification['status'] === 'Unread' ? 'unread' : ''; ?>">
+<div>
+<?php echo htmlspecialchars((string) $notification['message']); ?>
+<small><?php echo htmlspecialchars((string) $notification['date_sent']); ?> | <?php echo htmlspecialchars((string) $notification['status']); ?></small>
+</div>
+<?php if($notification['status'] === 'Unread') { ?>
+<form method="post">
+<input type="hidden" name="notification_id" value="<?php echo htmlspecialchars((string) $notification['notification_id']); ?>">
+<button type="submit">Mark Read</button>
+</form>
+<?php } ?>
+</div>
+<?php } ?>
+<?php } else { ?>
+<p>No notifications.</p>
+<?php } ?>
 </div>
 <h2 style="margin-bottom:12px;">Recent My Complaints</h2>
 <table>

@@ -72,7 +72,7 @@ font-size:14px;
 <input type="text" id="captchaInput" placeholder="Enter captcha" required>
 
 <div class="options">
-<a href="#">Forgot password?</a>
+<a href="../management/forgot_password.php">Forgot password?</a>
 </div>
 
 <button class="login-btn" type="submit">Sign In as Management</button>

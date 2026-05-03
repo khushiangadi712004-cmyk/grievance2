@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/notification_helper.php';
+
 if (!function_exists('category_name')) {
     function category_name($categoryId)
     {
@@ -230,6 +232,7 @@ if (!function_exists('handle_complaint_action')) {
         }
 
         $remarks = trim($remarks);
+        $owner = get_complaint_owner($conn, $tableName, $complaintId);
 
         if ($action === 'progress') {
             $query = "UPDATE {$tableName}
@@ -245,6 +248,15 @@ if (!function_exists('handle_complaint_action')) {
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
             insert_complaint_history($conn, $complaintId, $sourceType, 'In Progress', $remarks, $roleName);
+            if ($owner) {
+                add_notification(
+                    $conn,
+                    $complaintId,
+                    $owner['user_type'],
+                    $owner['user_id'],
+                    'Your complaint ID ' . $complaintId . ' has been marked as In Progress.'
+                );
+            }
             return 'Complaint marked as in progress.';
         }
 
@@ -278,6 +290,15 @@ if (!function_exists('handle_complaint_action')) {
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
             insert_complaint_history($conn, $complaintId, $sourceType, 'Resolved', $remarks, $roleName);
+            if ($owner) {
+                add_notification(
+                    $conn,
+                    $complaintId,
+                    $owner['user_type'],
+                    $owner['user_id'],
+                    'Your complaint ID ' . $complaintId . ' has been Resolved.'
+                );
+            }
             return 'Complaint resolved successfully.';
         }
 
@@ -308,6 +329,15 @@ if (!function_exists('handle_complaint_action')) {
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
             insert_complaint_history($conn, $complaintId, $sourceType, 'Escalated to ' . $targetRole, $remarks, $roleName);
+            if ($owner) {
+                add_notification(
+                    $conn,
+                    $complaintId,
+                    $owner['user_type'],
+                    $owner['user_id'],
+                    'Your complaint ID ' . $complaintId . ' has been marked as In Progress.'
+                );
+            }
             return 'Complaint escalated to ' . $targetRole . '.';
         }
 
