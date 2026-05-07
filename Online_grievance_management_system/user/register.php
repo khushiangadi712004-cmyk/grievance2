@@ -1,6 +1,43 @@
 <?php
 include("../include/conn.php");
 
+if(isset($_POST['ajax_check']))
+{
+    header('Content-Type: application/json');
+
+    $register_no = trim($_POST['register_no'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $response = [
+        'register_exists' => false,
+        'email_exists' => false
+    ];
+
+    if($register_no !== '' || $email !== ''){
+        $check_stmt = mysqli_prepare($conn, "SELECT register_no, email FROM student WHERE register_no = ? OR email = ?");
+
+        if($check_stmt){
+            mysqli_stmt_bind_param($check_stmt, 'ss', $register_no, $email);
+            mysqli_stmt_execute($check_stmt);
+            $check_result = mysqli_stmt_get_result($check_stmt);
+
+            while($existing_user = mysqli_fetch_assoc($check_result)){
+                if($register_no !== '' && strcasecmp($existing_user['register_no'], $register_no) === 0){
+                    $response['register_exists'] = true;
+                }
+
+                if($email !== '' && strcasecmp($existing_user['email'], $email) === 0){
+                    $response['email_exists'] = true;
+                }
+            }
+
+            mysqli_stmt_close($check_stmt);
+        }
+    }
+
+    echo json_encode($response);
+    exit;
+}
+
 if(isset($_POST['register']))
 {
     $mypswd = $_POST['mypswd'] ?? '';
@@ -298,6 +335,19 @@ background:#ffffff;
 box-shadow:0 0 0 4px rgba(29,78,216,0.12);
 }
 
+.field-message{
+display:block;
+min-height:18px;
+margin:-10px 0 13px;
+font-size:13px;
+font-weight:700;
+color:#dc2626;
+}
+
+.field-message.available{
+color:#047857;
+}
+
 .password-box input{
 padding-right:44px;
 }
@@ -387,10 +437,12 @@ font-size:29px;
 <input type="text" name="sname" placeholder="Enter your name" required>
 
 <label>Register No / Employee ID</label>
-<input type="text" name="register_no" placeholder="Enter ID" required>
+<input type="text" name="register_no" id="register_no" placeholder="Enter ID" required>
+<span class="field-message" id="registerMessage"></span>
 
 <label>Email</label>
-<input type="email" name="email" placeholder="Enter email" required>
+<input type="email" name="email" id="email" placeholder="Enter email" required>
+<span class="field-message" id="emailMessage"></span>
 
 <label>Phone Number</label>
 <input type="tel" name="phone" placeholder="+919876543210" pattern="^\+91[0-9]{10}$" title="Phone number must start with +91 followed by 10 digits" required>
@@ -449,6 +501,86 @@ pass.type="password";
 
 }
 
+let duplicateState={
+registerExists:false,
+emailExists:false
+};
+let duplicateCheckTimer=null;
+
+function setFieldMessage(element,message,isAvailable){
+element.textContent=message;
+element.classList.toggle("available",isAvailable);
+}
+
+function checkExistingStudent(){
+let registerNo=document.getElementById("register_no").value.trim();
+let email=document.getElementById("email").value.trim();
+let registerMessage=document.getElementById("registerMessage");
+let emailMessage=document.getElementById("emailMessage");
+
+duplicateState.registerExists=false;
+duplicateState.emailExists=false;
+
+if(registerNo==="" && email===""){
+setFieldMessage(registerMessage,"",false);
+setFieldMessage(emailMessage,"",false);
+return;
+}
+
+let formData=new FormData();
+formData.append("ajax_check","1");
+formData.append("register_no",registerNo);
+formData.append("email",email);
+
+fetch("register.php",{
+method:"POST",
+body:formData
+})
+.then(function(response){
+return response.json();
+})
+.then(function(data){
+duplicateState.registerExists=data.register_exists;
+duplicateState.emailExists=data.email_exists;
+
+if(registerNo!==""){
+if(data.register_exists){
+setFieldMessage(registerMessage,"This register number is already registered",false);
+}
+else{
+setFieldMessage(registerMessage,"Register number is available",true);
+}
+}
+else{
+setFieldMessage(registerMessage,"",false);
+}
+
+if(email!=="" && document.getElementById("email").checkValidity()){
+if(data.email_exists){
+setFieldMessage(emailMessage,"This email is already registered",false);
+}
+else{
+setFieldMessage(emailMessage,"Email is available",true);
+}
+}
+else{
+setFieldMessage(emailMessage,"",false);
+}
+})
+.catch(function(){
+setFieldMessage(registerMessage,"",false);
+setFieldMessage(emailMessage,"",false);
+});
+}
+
+function scheduleDuplicateCheck(){
+clearTimeout(duplicateCheckTimer);
+duplicateCheckTimer=setTimeout(checkExistingStudent,400);
+}
+
+document.getElementById("register_no").addEventListener("input",scheduleDuplicateCheck);
+document.getElementById("email").addEventListener("input",scheduleDuplicateCheck);
+
 document.getElementById("registerForm").addEventListener("submit", function(e){
 let email=this.email.value.trim();
 let phone=this.phone.value.trim();
@@ -477,6 +609,19 @@ return;
 
 if(password!==confirmPassword){
 alert("Passwords do not match");
+e.preventDefault();
+}
+
+if(duplicateState.registerExists || duplicateState.emailExists){
+if(duplicateState.registerExists && duplicateState.emailExists){
+alert("This register number and email are already registered");
+}
+else if(duplicateState.registerExists){
+alert("This register number is already registered");
+}
+else{
+alert("This email is already registered");
+}
 e.preventDefault();
 }
 });
