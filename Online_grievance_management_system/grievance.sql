@@ -206,10 +206,10 @@ INSERT INTO `management` (`management_id`, `mname`, `password`) VALUES
 
 DROP TABLE IF EXISTS `notiification`;
 CREATE TABLE IF NOT EXISTS `notiification` (
-  `notification_id` int NOT NULL,
+  `notification_id` int NOT NULL AUTO_INCREMENT,
   `complaint_id` int NOT NULL,
   `user_type` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_id` int NOT NULL,
+  `user_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `date_sent` datetime NOT NULL,
   `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,

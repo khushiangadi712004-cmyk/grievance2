@@ -38,10 +38,18 @@ $resolved_total = fetch_count($conn, "SELECT COUNT(*) FROM staff_complaint WHERE
 
 $recent_complaints = mysqli_query(
     $conn,
-    "SELECT complaint_id, category_id, department_no, description, status, date_submitted
-     FROM staff_complaint
-     WHERE staff_id = '$staff_id'
-     ORDER BY complaint_id DESC
+    "SELECT sc.complaint_id, sc.category_id, sc.department_no, sc.description, sc.status, sc.date_submitted,
+        (SELECT ch.remarks
+         FROM complaint_history ch
+         WHERE ch.complaint_id = sc.complaint_id
+           AND ch.source_type IN ('staff', 'staff_complaint')
+           AND ch.remarks IS NOT NULL
+           AND ch.remarks <> ''
+         ORDER BY ch.updated_at DESC, ch.id DESC
+         LIMIT 1) AS latest_remark
+     FROM staff_complaint sc
+     WHERE sc.staff_id = '$staff_id'
+     ORDER BY sc.complaint_id DESC
      LIMIT 10"
 );
 ?>
@@ -133,6 +141,7 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 <th>Category</th>
 <th>Department</th>
 <th>Description</th>
+<th>Latest Remark</th>
 <th>Date</th>
 <th>Status</th>
 </tr>
@@ -143,12 +152,13 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 <td><?php echo htmlspecialchars((string) $row['category_id']); ?></td>
 <td><?php echo htmlspecialchars((string) $row['department_no']); ?></td>
 <td><?php echo htmlspecialchars((string) $row['description']); ?></td>
+<td><?php echo htmlspecialchars((string) ($row['latest_remark'] ?? 'No remarks yet')); ?></td>
 <td><?php echo htmlspecialchars((string) $row['date_submitted']); ?></td>
 <td><span class="status <?php if($row['status'] === 'Pending'){echo 'pending';} elseif($row['status'] === 'In Progress'){echo 'progress';} else {echo 'resolved';} ?>"><?php echo htmlspecialchars((string) $row['status']); ?></span></td>
 </tr>
 <?php } ?>
 <?php } else { ?>
-<tr><td colspan="6">No complaints submitted by this staff account.</td></tr>
+<tr><td colspan="7">No complaints submitted by this staff account.</td></tr>
 <?php } ?>
 </table>
 </div>

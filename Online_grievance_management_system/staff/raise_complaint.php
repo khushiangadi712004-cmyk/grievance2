@@ -234,7 +234,6 @@ padding:20px;
 <a href="dashboard_staff.php"><i class="fa fa-home"></i> Dashboard</a>
 <a href="raise_complaint.php" class="active"><i class="fa fa-pen"></i> Raise Complaint</a>
 <a href="my_complaints.php"><i class="fa fa-file-lines"></i> My Complaints</a>
-<a href="complaints.php"><i class="fa fa-list"></i> Assigned Complaints</a>
 <a href="../index.php"><i class="fa fa-home"></i> Main Portal</a>
 <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Logout</a>
 </div>

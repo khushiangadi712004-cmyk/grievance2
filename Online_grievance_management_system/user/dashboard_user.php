@@ -43,7 +43,19 @@ $resolved_row = mysqli_fetch_assoc($resolved_result);
 $resolved = $resolved_row['resolved'];
 
 /* Fetch recent complaints */
-$complaint_query = "SELECT * FROM complaint WHERE register_no='$register_no' ORDER BY complaint_id DESC LIMIT 5";
+$complaint_query = "SELECT c.*,
+    (SELECT ch.remarks
+     FROM complaint_history ch
+     WHERE ch.complaint_id = c.complaint_id
+       AND ch.source_type = 'complaint'
+       AND ch.remarks IS NOT NULL
+       AND ch.remarks <> ''
+     ORDER BY ch.updated_at DESC, ch.id DESC
+     LIMIT 1) AS latest_remark
+    FROM complaint c
+    WHERE c.register_no='$register_no'
+    ORDER BY c.complaint_id DESC
+    LIMIT 5";
 $complaints = mysqli_query($conn,$complaint_query);
 ?>
 
@@ -319,6 +331,7 @@ cursor:pointer;
 <th>Category</th>
 <th>Description</th>
 <th>Assigned To</th>
+<th>Latest Remark</th>
 <th>Status</th>
 </tr>
 <?php while($row = mysqli_fetch_assoc($complaints)) { ?>
@@ -332,6 +345,8 @@ cursor:pointer;
 <td><?php echo htmlspecialchars($row['description']); ?></td>
 
 <td><?php echo htmlspecialchars((string) ($row['assigned_to'] ?? category_route((int) $row['category_id']))); ?></td>
+
+<td><?php echo htmlspecialchars((string) ($row['latest_remark'] ?? 'No remarks yet')); ?></td>
 
 <td>
 <span class="status 

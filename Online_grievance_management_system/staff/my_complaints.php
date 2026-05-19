@@ -13,10 +13,18 @@ $staff_design = $_SESSION['staff_design'] ?? 'Staff';
 
 $my_complaints = mysqli_query(
     $conn,
-    "SELECT complaint_id, category_id, department_no, description, file_upload, status, date_submitted
-     FROM staff_complaint
-     WHERE staff_id = '$staff_id'
-     ORDER BY complaint_id DESC"
+    "SELECT sc.complaint_id, sc.category_id, sc.department_no, sc.description, sc.file_upload, sc.status, sc.date_submitted,
+        (SELECT ch.remarks
+         FROM complaint_history ch
+         WHERE ch.complaint_id = sc.complaint_id
+           AND ch.source_type IN ('staff', 'staff_complaint')
+           AND ch.remarks IS NOT NULL
+           AND ch.remarks <> ''
+         ORDER BY ch.updated_at DESC, ch.id DESC
+         LIMIT 1) AS latest_remark
+     FROM staff_complaint sc
+     WHERE sc.staff_id = '$staff_id'
+     ORDER BY sc.complaint_id DESC"
 );
 ?>
 <!DOCTYPE html>
@@ -72,6 +80,7 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 <th>Category</th>
 <th>Department</th>
 <th>Description</th>
+<th>Latest Remark</th>
 <th>Attachment</th>
 <th>Date</th>
 <th>Status</th>
@@ -83,6 +92,7 @@ td{padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
 <td><?php echo htmlspecialchars((string) $row['category_id']); ?></td>
 <td><?php echo htmlspecialchars((string) $row['department_no']); ?></td>
 <td><?php echo htmlspecialchars((string) $row['description']); ?></td>
+<td><?php echo htmlspecialchars((string) ($row['latest_remark'] ?? 'No remarks yet')); ?></td>
 <td>
 <?php if(!empty($row['file_upload'])) { ?>
 <a class="file-link" href="../uploads/<?php echo rawurlencode($row['file_upload']); ?>" target="_blank">View File</a>
@@ -95,7 +105,7 @@ No File
 </tr>
 <?php } ?>
 <?php } else { ?>
-<tr><td colspan="7">No staff complaints found.</td></tr>
+<tr><td colspan="8">No staff complaints found.</td></tr>
 <?php } ?>
 </table>
 </div>
