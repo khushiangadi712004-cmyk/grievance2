@@ -43,7 +43,9 @@ body,
 .hero-panel,
 .workflow-section,
 .login-container,
-.container {
+.container,
+.notifications,
+.notification-item {
   transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -73,11 +75,36 @@ body,
 :root[data-theme="dark"] .container,
 :root[data-theme="dark"] .form-card,
 :root[data-theme="dark"] .profile-card,
-:root[data-theme="dark"] .hero-panel {
+:root[data-theme="dark"] .hero-panel,
+:root[data-theme="dark"] .notifications {
   background: var(--card-bg) !important;
   color: var(--text-color) !important;
   border-color: var(--border-color) !important;
   box-shadow: 0 18px 45px var(--shadow-color) !important;
+}
+
+:root[data-theme="dark"] .notification-item {
+  color: var(--text-color) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+
+:root[data-theme="dark"] .notification-item small {
+  color: var(--muted-text) !important;
+}
+
+:root[data-theme="dark"] .notification-item.unread {
+  color: #f8fafc !important;
+}
+
+:root[data-theme="dark"] form[action="dashboard_hod.php"] {
+  background: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 18px 45px var(--shadow-color) !important;
+}
+
+:root[data-theme="dark"] form[action="dashboard_hod.php"] label {
+  color: var(--text-color) !important;
 }
 
 :root[data-theme="dark"] table {
