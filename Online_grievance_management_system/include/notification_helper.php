@@ -49,12 +49,35 @@ if (!function_exists('notification_table_exists')) {
     }
 }
 
+if (!function_exists('ensure_notification_user_id_column_type')) {
+    function ensure_notification_user_id_column_type($conn)
+    {
+        $table_name = notification_table_name($conn);
+        if ($table_name === '') {
+            return;
+        }
+
+        $result = @mysqli_query($conn, "SHOW COLUMNS FROM `{$table_name}` LIKE 'user_id'");
+        if (!$result || mysqli_num_rows($result) === 0) {
+            return;
+        }
+
+        $column = mysqli_fetch_assoc($result);
+        $type = strtolower($column['Type'] ?? '');
+        if ($type !== 'varchar(50)' && $type !== 'varchar(255)' && strpos($type, 'varchar') === false) {
+            @mysqli_query($conn, "ALTER TABLE `{$table_name}` MODIFY `user_id` VARCHAR(50) NOT NULL");
+        }
+    }
+}
+
 if (!function_exists('add_notification')) {
     function add_notification($conn, $complaint_id, $user_type, $user_id, $message)
     {
         if (!notification_table_exists($conn)) {
             return false;
         }
+
+        ensure_notification_user_id_column_type($conn);
 
         $table_name = notification_table_name($conn);
         $status = 'Unread';
@@ -163,6 +186,7 @@ if (!function_exists('get_user_notifications')) {
             return $notifications;
         }
 
+        ensure_notification_user_id_column_type($conn);
         $limit = max(1, (int) $limit);
         $user_id = (string) $user_id;
 
@@ -201,6 +225,7 @@ if (!function_exists('mark_notification_read')) {
             return false;
         }
 
+        ensure_notification_user_id_column_type($conn);
         $table_name = notification_table_name($conn);
         $status = 'Read';
         $user_id = (string) $user_id;
