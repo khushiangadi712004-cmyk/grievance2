@@ -8,6 +8,8 @@ if(!isset($_SESSION['staff_id'])){
     exit();
 }
 
+ensure_complaint_columns($conn);
+
 $staff_id = $_SESSION['staff_id'];
 $staff_name = $_SESSION['staff_name'] ?? 'Staff';
 $department_no = $_SESSION['staff_department_no'] ?? '';
@@ -46,6 +48,14 @@ if(isset($_POST['submit'])){
         }
         $handled_by_role = 'System';
         $status = 'Pending';
+        $important_keywords = ['Harassment', 'Safety', 'Ragging', 'Examination Issue', 'Result Error', 'Data Loss', 'Emergency'];
+        $is_important = 0;
+        foreach($important_keywords as $keyword){
+            if(stripos($description, $keyword) !== false){
+                $is_important = 1;
+                break;
+            }
+        }
 
         $file_name = '';
         $upload_error = '';
@@ -61,14 +71,14 @@ if(isset($_POST['submit'])){
             $stmt = mysqli_prepare(
                 $conn,
                 "INSERT INTO staff_complaint
-                (staff_id, category_id, department_no, description, file_upload, assigned_to, handled_by_role, status, date_submitted)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())"
+                (staff_id, category_id, department_no, description, file_upload, assigned_to, handled_by_role, status, is_important, date_submitted)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"
             );
 
             if($stmt){
                 mysqli_stmt_bind_param(
                     $stmt,
-                    'iiisssss',
+                    'iiisssssi',
                     $staff_id,
                     $category_id,
                     $selected_department,
@@ -76,7 +86,8 @@ if(isset($_POST['submit'])){
                     $file_name,
                     $assigned_to,
                     $handled_by_role,
-                    $status
+                    $status,
+                    $is_important
                 );
 
                 if(mysqli_stmt_execute($stmt)){

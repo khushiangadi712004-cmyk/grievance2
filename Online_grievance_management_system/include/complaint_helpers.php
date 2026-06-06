@@ -141,6 +141,7 @@ if (!function_exists('ensure_complaint_columns')) {
                 'escalation_reason' => "ALTER TABLE complaint ADD COLUMN escalation_reason TEXT NULL",
                 'escalated_at' => "ALTER TABLE complaint ADD COLUMN escalated_at DATETIME NULL",
                 'handled_by_role' => "ALTER TABLE complaint ADD COLUMN handled_by_role VARCHAR(20) NULL",
+                'is_important' => "ALTER TABLE complaint ADD COLUMN is_important TINYINT(1) DEFAULT 0",
             ],
             'staff_complaint' => [
                 'assigned_to' => "ALTER TABLE staff_complaint ADD COLUMN assigned_to VARCHAR(50) NULL",
@@ -148,6 +149,7 @@ if (!function_exists('ensure_complaint_columns')) {
                 'escalation_reason' => "ALTER TABLE staff_complaint ADD COLUMN escalation_reason TEXT NULL",
                 'escalated_at' => "ALTER TABLE staff_complaint ADD COLUMN escalated_at DATETIME NULL",
                 'handled_by_role' => "ALTER TABLE staff_complaint ADD COLUMN handled_by_role VARCHAR(20) NULL",
+                'is_important' => "ALTER TABLE staff_complaint ADD COLUMN is_important TINYINT(1) DEFAULT 0",
             ],
         ];
 

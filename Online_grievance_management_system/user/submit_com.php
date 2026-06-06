@@ -9,6 +9,8 @@ if(!isset($_SESSION['register_no'])){
     exit();
 }
 
+ensure_complaint_columns($conn);
+
 $register_no = $_SESSION['register_no'];
 $department_no = (int) ($_SESSION['student_department_no'] ?? 0);
 $dept_stmt = mysqli_prepare($conn, "SELECT department_no FROM student WHERE register_no = ? LIMIT 1");
@@ -45,6 +47,14 @@ if (isset($_POST['submit'])) {
         }
         $handled_by_role = 'System';
         $status = 'Pending';
+        $important_keywords = ['Harassment', 'Safety', 'Ragging', 'Examination Issue', 'Result Error', 'Data Loss', 'Emergency'];
+        $is_important = 0;
+        foreach ($important_keywords as $keyword) {
+            if (stripos($description, $keyword) !== false) {
+                $is_important = 1;
+                break;
+            }
+        }
 
         $file = '';
         $upload_failed = false;
@@ -62,14 +72,14 @@ if (isset($_POST['submit'])) {
             $stmt = mysqli_prepare(
                 $conn,
                 "INSERT INTO complaint
-                (register_no, staff_id, category_id, department_no, description, file_upload, assigned_to, handled_by_role, status, date_submitted)
-                VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, NOW())"
+                (register_no, staff_id, category_id, department_no, description, file_upload, assigned_to, handled_by_role, status, is_important, date_submitted)
+                VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"
             );
 
             if ($stmt) {
                 mysqli_stmt_bind_param(
                     $stmt,
-                    'siisssss',
+                    'siisssssi',
                     $register_no,
                     $category_id,
                     $department_no,
@@ -77,7 +87,8 @@ if (isset($_POST['submit'])) {
                     $file,
                     $assigned_to,
                     $handled_by_role,
-                    $status
+                    $status,
+                    $is_important
                 );
 
                 if (mysqli_stmt_execute($stmt)) {
